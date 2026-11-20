@@ -31,7 +31,7 @@ body {
     color: #e6eef6;
     line-height: 1.5;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
     color-scheme: dark;
 }
 
@@ -1273,6 +1273,29 @@ section {
 }
 
 /* ==========================================================================
+   SEKCJA LICZNIKÓW NA ŻYWO (LIVECOUNTS)
+   ========================================================================== */
+
+/* Kontener na liczniki Livecounts */
+.live-counters-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 25px 0 10px 0;
+}
+
+/* Pojedyncza ramka z licznikiem */
+.counter-iframe {
+    border: none;
+    width: 280px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+
+/* ==========================================================================
    WERSJA MOBILNA
    ========================================================================== */
 
@@ -1383,35 +1406,36 @@ section {
 	
     .snapwidget-widget { 
         width: 100%; 
-        height: 1000px%; 
+        height: 1000px;
         aspect-ratio: 25 / 10; 
     }
 }
 
 /* ==========================================================================
-   SEKCJA LICZNIKÓW NA ŻYWO (LIVECOUNTS)
+   MENU PRZYKLEJONE - TYLKO KOMPUTERY
    ========================================================================== */
 
-/* Kontener na liczniki Livecounts */
-.live-counters-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin: 25px 0 10px 0;
+@media screen and (min-width: 1201px) {
+    #menu-placeholder {
+        position: sticky;
+        top: 0;
+        z-index: 9999;
+    }
+
+    #menu-placeholder > header {
+        position: static;
+    }
 }
 
-/* Pojedyncza ramka z licznikiem */
-.counter-iframe {
-    border: none;
-    width: 280px;
-    height: 80px;
-    border-radius: 8px;
-    overflow: hidden;
-}
+/* TELEFONY I TABLETY - MENU PRZEWIJA SIĘ NORMALNIE */
 
-#menu-placeholder {
-    position: sticky;
-    top: 0;
-    z-index: 9999;
+@media screen and (max-width: 1200px) {
+    #menu-placeholder {
+        position: static;
+    }
+
+    #menu-placeholder > header {
+        position: static;
+        top: auto;
+    }
 }
