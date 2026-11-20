@@ -62,16 +62,15 @@ textarea:focus-visible {
 }
 
 /* ==========================================================================
-   Nagłówek i menu główne (Nowoczesny Glassmorphism & Sticky na desktopie)
+   Nagłówek i menu główne (Nowoczesny Glassmorphism & Sticky)
    ========================================================================== */
 
 header {
-    position: sticky;         /* Przyklejony u góry na desktopie */
-    top: 0;
-    background: rgba(15, 17, 21, 0.75); /* Przezroczyste tło dopasowane do --bg */
-    backdrop-filter: blur(12px);       /* Zwiększone rozmycie dla nowoczesnego efektu szkła */
+    position: static;          /* Przewija się razem ze stroną */
+    background: rgba(15, 17, 21, 0.75);
+    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    z-index: 500;              /* Podniesiony zindex, by menu zawsze było nad elementami gry */
+    z-index: 500;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding: 12px 20px;
     transition: background var(--transition), border-color var(--transition);
@@ -1296,15 +1295,10 @@ section {
 }
 
 /* ==========================================================================
-   WERSJA MOBILNA (bez przyklejania nagłówka na telefonie)
+   WERSJA MOBILNA
    ========================================================================== */
 
 @media screen and (max-width: 1200px) {
-    header {
-        position: static;
-        top: auto;
-    }
-
     .menu-icon { 
         display: block; 
         color: var(--accent);
