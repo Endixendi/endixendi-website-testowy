@@ -1424,3 +1424,15 @@ section {
     border-radius: 8px;
     overflow: hidden;
 }
+
+/* Przyklejenie całego kontenera menu do górnej krawędzi */
+#menu-placeholder {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+}
+
+/* Sam nagłówek pozostaje wewnątrz przyklejonego kontenera */
+#menu-placeholder header {
+    position: static;
+}
