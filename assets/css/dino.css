@@ -1,0 +1,245 @@
+/* ==========================================================================
+   GŁÓWNE STYLE GRY DINO
+   ========================================================================== */
+
+:root {
+    --primary-color: var(--accent);
+    --primary-dark: var(--accent-2);
+}
+
+body {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Scoreboard */
+#scoreBoard {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+/* Kontener główny gry */
+.dino-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Plansza */
+.board-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(to right, var(--accent), var(--accent-2), var(--accent));
+    padding: 2px;
+    box-sizing: border-box;
+    transition: background var(--transition);
+}
+
+#gameCanvas {
+    width: 100%;
+    height: auto;
+    border-radius: 14px;
+    background: var(--bg);
+    display: block;
+}
+
+/* Overlay (Menu nakładane na grę) */
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px;
+    z-index: 10;
+    padding: 15px; /* Bezpieczny wewnętrzny margines na małe ekrany */
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.modal {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--accent);
+    max-width: 90%; /* Zabezpieczenie przed dotykaniem krawędzi ekranu */
+    box-sizing: border-box;
+}
+
+/* Panel pod grą (Sterowanie i Kontenery) */
+.game-footer-controls {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+/* Dynamiczny kolor nagłówka "Sterowanie" zależny od zmiennej motywu */
+.controls-info h3 {
+    margin: 0;
+    color: var(--accent) !important;
+    font-size: 1rem;
+}
+
+/* Uwaga: Bloki .volume-settings i suwaki zostały usunięte - są pobierane ze style.css */
+
+/* ==========================================================================
+   Modyfikacja specyficzna dla CZERWONEGO MOTYWU (Ciało z klasą .theme-red)
+   ========================================================================== */
+
+body.theme-red .board-container {
+    background: #ff0000 !important;
+}
+
+/* Dopasowanie ramki karty dino do czerwonego motywu */
+body.theme-red #dino-game.card:hover {
+    border-color: rgba(255, 0, 0, 0.4) !important;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.15) !important;
+}
+
+body.theme-red .controls-info h3 {
+    color: #ff0000 !important;
+}
+
+body.theme-red #jumpBtn {
+    background: #ff0000 !important;
+    color: #ffffff !important;
+    border-color: #ff0000 !important;
+}
+
+/* ==========================================================================
+   Sterowanie Mobilne i Responsywność
+   ========================================================================== */
+
+.mobile-controls {
+    display: none;
+    width: 100%;
+    max-width: 800px;
+    gap: 12px;
+}
+
+/* Wspólny styl dla obu przycisków (Komputer / Stan bazowy) */
+#jumpBtn, #crouchBtn {
+    padding: 14px;
+    font-weight: 800;
+    font-size: 1rem;
+    color: white;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.1s, background var(--transition), border-color var(--transition);
+}
+
+#jumpBtn:hover, #crouchBtn:hover {
+    border-color: var(--accent);
+}
+
+#jumpBtn:active, #crouchBtn:active {
+    transform: scale(0.97);
+    background: var(--card);
+}
+
+@media (max-width: 768px) {
+    #dino-hero.mt-16 { 
+        margin-top: 5px !important; 
+    }
+    #dino-hero .card { 
+        padding: 10px; 
+    }
+    #dino-hero h1 { 
+        font-size: 1.5rem; 
+        margin-bottom: 5px; 
+    }
+    #dino-hero p { 
+        font-size: 0.9rem; 
+    }
+    
+    #dino-game {
+        padding: 8px !important;
+        margin-top: 10px !important;
+    }
+    
+    .board-container {
+        border-radius: 10px;
+        padding: 1px;
+    }
+
+    /* Dopasowanie canvasa, aby nie był zgnieciony */
+    #gameCanvas {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 200px;
+        border-radius: 9px;
+        display: block;
+    }
+
+    /* Pasek przycisków mobilnych */
+    .mobile-controls {
+        display: flex !important;
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    /* Styl mobilny dla OBU przycisków (Równe ułożenie obok siebie 50/50) */
+    #jumpBtn, #crouchBtn {
+        flex: 1;
+        height: 55px; /* Duży, wygodny przycisk pod kciuk */
+        font-size: 1.1rem;
+        background: var(--accent);
+        color: #000;
+        font-weight: bold;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 170, 255, 0.3);
+    }
+    
+    /* Efekt kliknięcia na telefonie dla obu przycisków - naprawiony */
+    #jumpBtn:active, #crouchBtn:active {
+        background: #0088dd !important;
+        transform: scale(0.98) !important;
+    }
+
+    .game-footer-controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* Globalne dopasowanie szerokości ujednoliconego paska audio na mobilkach */
+    .audio-settings {
+        width: 100%;
+    }
+}
+
+/* Wsparcie dla CZERWONEGO MOTYWU dla OBU przycisków mobilnych */
+body.theme-red #jumpBtn, 
+body.theme-red #crouchBtn {
+    background: #ff0000 !important;
+    color: #ffffff !important;
+    border-color: #ff0000 !important;
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3) !important;
+}
+
+body.theme-red #jumpBtn:active,
+body.theme-red #crouchBtn:active {
+    background: #cc0000 !important;
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Oficjalna strona Endixendi — znajdziesz tu informacje, linki do social media oraz pełną specyfikację mojego komputera.">
+    <meta name="keywords" content="Endixendi, strona internetowa, PC, specyfikacja komputera, portfolio, blog">
+    <title>Endixendi — Gaming, Streaming, Poradniki, PC</title>
+
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="icon" href="assets/images/logo-kolo.png" type="image/png">
+</head>
+<body id="top">
+
+    <div id="loader">
+        <img src="assets/images/logo-kolo.png" alt="Loading..." class="loader-logo">
+    </div>
+
+    <div id="menu-placeholder"></div>
+
+    <main id="home">
+
+        <section class="hero">
+            <div class="card hero-sidebar">
+                <h1>Witaj — jestem Endixendi</h1>
+                <p class="lead">
+                    Nagrywam gameplaye i poradniki, dzieląc się swoją pasją do gier, technologii oraz wszystkiego, co związane z cyfrowym światem. Na mojej stronie znajdziesz filmy, sprzęt, który używam oraz wskazówki dotyczące tworzenia treści.
+                </p>
+
+                <div class="cta">
+                    <button class="btn" data-scroll="#tworczosc">Zobacz filmy</button>
+                    <button class="btn" id="red-theme-btn">Włącz czerwony styl</button>
+                    <button class="btn" id="toggle-effects-btn" onclick="toggleEffects()">Wyłącz efekty</button>
+                </div>
+
+                <div class="grid full mt-16">
+                    <div class="card hero-sidebar">
+                        <h3>Social Media</h3>
+                        <p class="muted">Wszystkie moje linki w jednym miejscu.</p>
+                        <p><a class="inline-link" href="https://linktr.ee/endixendi" target="_blank" rel="noopener">linktr.ee/endixendi</a></p>
+                    </div>
+                    <div class="card hero-sidebar">
+                        <h3>Najświeższe filmy</h3>
+                        <p class="muted">Kliknij aby odwiedzić mój kanał.</p>
+                        <p><a class="inline-link" href="https://www.youtube.com/c/Endixendi?sub_confirmation=1" target="_blank" rel="noopener">YouTube — Endixendi</a></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="hero-sidebar">
+                <aside class="card hero-sidebar">
+                    <h3>Krótko o mnie</h3>
+                    <p class="muted">Pasjonat informatyki i absolwent tego kierunku. Uwielbiam gry, więc nagrywanie filmów, shortów i tworzenie grafiki komputerowej to dla mnie przyjemność.</p>
+                    <a class="btn mt-12" href="#o-mnie">Więcej</a>
+                </aside>
+
+                <aside class="card hero-sidebar">
+                    <h3>Discord</h3>
+                    <p class="muted">Dołącz do mojej społeczności na Discordzie.</p>
+                    <p>
+                        <a href="https://discord.com/invite/MwGVnXWUaW" target="_blank" rel="noopener" class="discord-link">
+                            <img src="assets/images/logo-dc.png" alt="Logo Discord" class="discord-icon">
+                            EndiCord
+                        </a>
+                    </p>
+                </aside>
+            </div>
+        </section>
+
+        <section id="tworczosc" class="card mt-22">
+            <h2>Twórczość — filmy</h2>
+            <p class="muted">Pierwszy materiał z kanału YouTube <a class="inline-link" href="https://www.youtube.com/c/Endixendi?sub_confirmation=1">(@Endixendi)</a> który zaczął moją przygodę z nagrywaniem to MTA.</p>
+
+            <div class="videos" id="videos">
+                <div class="video card">
+                    <iframe src="https://www.youtube.com/embed/eXZwitHgwZM" title="YouTube video" allowfullscreen></iframe>
+                    <div class="video-title">Poznaj Moją Twórczość</div>
+                </div>
+                <div class="video card">
+                    <iframe src="https://www.youtube.com/embed/lqi6XXv5g10" title="YouTube video" allowfullscreen></iframe>
+                    <div class="video-title">Pierwszy Film Który Zachęcił Mnie Do Nagrywania</div>
+                </div>
+            </div>
+            <a class="mt-12 btn-full-width btn" href="https://www.youtube.com/c/Endixendi?sub_confirmation=1" target="_blank" rel="noopener">Odwiedź mój kanał: Endixendi</a>
+        </section>
+
+	<section id="pc" class="controls-left card mt-22">
+		<h2 class="mt-18">Specyfikacja</h2>
+	
+		<h3 class="mt-18">PC</h3>
+		<table class="specs mt-12" aria-label="Specyfikacja komputera">
+			<tr><td class="cat">Procesor (CPU)</td><td>➤ AMD Ryzen 7 5700X</td></tr>
+			<tr><td class="cat">Chłodzenie CPU</td><td>➤ ENDORFY Navis F360 ARGB, 3×120 mm</td></tr>
+			<tr><td class="cat">Karta graficzna (GPU)</td><td>➤ ASUS GeForce RTX 4060 Dual EVO OC, 8 GB</td></tr>
+			<tr><td class="cat">Płyta główna</td><td>➤ ASUS ROG STRIX B550-F GAMING</td></tr>
+			<tr><td class="cat">Pamięć RAM</td><td>➤ Kingston Fury Renegade, 2×16 GB, 3600 MHz, CL16</td></tr>
+			<tr><td class="cat">Zasilacz</td><td>➤ Zalman ZM600-GSII, 600 W, 120 mm, ATX, 80Plus</td></tr>
+			<tr><td class="cat">Obudowa</td><td>➤ ENDORFY Arx 700 Air</td></tr>
+			<tr>
+				<td class="cat">Dyski SSD M.2 NVMe</td>
+				<td class="ssd-list">➤ LEXAR NM790 2TB SSD – odczyt 7400 MB/s, zapis 6500 MB/s
+					➤ WD Blue SN580 1 TB – odczyt 4150 MB/s, zapis 4150 MB/s
+					➤ Kingston A2000 500 GB – odczyt 2200 MB/s, zapis 2000 MB/s
+				</td>
+			</tr>
+			<tr>
+				<td class="cat">Dyski SSD SATA</td>
+				<td>➤ GOODRAM 120GB 2,5" SATA SSD CL100 gen.3 – odczyt 500 MB/s, zapis 360 MB/s</td>
+			</tr>
+			<tr>
+				<td class="cat">Dyski HDD</td>
+				<td class="ssd-list">➤ Seagate 1 TB – ST1000DM010-2EP102
+					➤ Toshiba 1 TB – External USB 3.0 (przenośny)
+				</td>
+			</tr>
+			<tr>
+				<td class="cat">System operacyjny</td>
+				<td>➤ Windows 11 HOME</td>
+			</tr>
+		</table>
+
+		<h3 class="mt-18">Serwer domowy (TrueNAS SCALE)</h3>
+		<table class="specs mt-12" aria-label="Specyfikacja serwera">
+			<tr><td class="cat">Procesor (CPU)</td><td>➤ Intel Core i3-10100</td></tr>
+			<tr><td class="cat">Chłodzenie CPU</td><td>➤ Intel Box (fabryczne)</td></tr>
+			<tr><td class="cat">Karta graficzna (GPU)</td><td>➤ Zintegrowana – Intel UHD Graphics 630</td></tr>
+			<tr><td class="cat">Płyta główna</td><td>➤ Asrock B560M Steel Legend</td></tr>
+			<tr>
+				<td class="cat">Pamięć RAM</td>
+				<td class="ssd-list">➤ HyperX Fury DDR4, 2×4 GB, 2400 MHz, CL15
+					➤ GoodRam IRDM X DDR4, 2×8 GB, 2666 MHz, CL16
+				</td>
+			</tr>
+			<tr><td class="cat">Zasilacz</td><td>➤ be quiet! Pure Power 10 300W (L10-300W)</td></tr>
+			<tr><td class="cat">Obudowa</td><td>➤ Corsair CARBIDE SERIES 200R (czarna)</td></tr>
+			<tr>
+				<td class="cat">Dyski M.2</td>
+				<td class="ssd-list">➤ Kingston SA400M 240 GB M.2 SATA
+					➤ Adata XPG SX8200 PRO 256 GB M.2 NVMe
+				</td>
+			</tr>
+			<tr>
+				<td class="cat">Dyski HDD 3,5"</td>
+				<td class="ssd-list">➤ Seagate Barracuda 7200.12 500 GB (ST3500418AS)
+					➤ Seagate Pipeline HD .2 500 GB (ST3500312CS)
+				</td>
+			</tr>
+			<tr>
+				<td class="cat">Dyski HDD 2,5"</td>
+				<td>➤ Seagate / Samsung Spinpoint M8 1 TB 2,5" (ST1000LM024)</td>
+			</tr>
+			<tr><td class="cat">Napęd optyczny</td><td>➤ Nagrywarka DVD/CD TSSTcorp DVD Writer SH-S223 / TS-H653H SATA</td></tr>
+			<tr><td class="cat">System operacyjny</td><td>➤ TrueNAS SCALE 25.10.7</td></tr>
+		</table>
+
+		<h3 class="mt-18">Laptop</h3>
+		<table class="specs mt-12" aria-label="Specyfikacja laptopa">
+			<tr><td class="cat">Model</td><td>➤ HP 15s-eq2464nw (8F706EA)</td></tr>
+			<tr><td class="cat">Procesor (CPU)</td><td>➤ AMD Ryzen 5 5500U (6 rdzeni, 12 wątków, do 4.0 GHz)</td></tr>
+			<tr><td class="cat">Karta graficzna (GPU)</td><td>➤ Zintegrowana – AMD Radeon™ Graphics</td></tr>
+			<tr><td class="cat">Pamięć RAM</td><td>➤ 16 GB DDR4, 3200 MHz (2×8 GB, Dual Channel)</td></tr>
+			<tr><td class="cat">Dysk SSD</td><td>➤ 512 GB SSD M.2 PCIe NVMe</td></tr>
+			<tr><td class="cat">Ekran</td><td>➤ 15,6" Full HD (1920×1080) IPS, matowy, 250 nits</td></tr>
+			<tr><td class="cat">Multimedia</td><td>➤ Kamera HD, wbudowane głośniki stereo, 2× mikrofon</td></tr>
+			<tr><td class="cat">Łączność i złącza</td><td>➤ Wi-Fi 5, Bluetooth 5.0 | USB-C, 2× USB 3.2, HDMI 1.4b, Czytnik SD</td></tr>
+			<tr><td class="cat">System operacyjny</td><td>➤ Linux Mint 22.3</td></tr>
+		</table>
+
+		<h3 class="mt-18">Urządzenia peryferyjne</h3>
+		<ul>		
+			<li>Monitory: 2× Monitor LG UltraGear 27GS75Q-B 27" 2K IPS 180Hz (O/C 200Hz) 1ms Gamingowy, TV 4K 60Hz Hisense 55"</li>
+			<li>Słuchawki: ENDORFY Viro Plus USB</li>
+			<li>Mikrofon: Endorfy Solum Streaming SM950</li>
+			<li>Mysz: Logitech G502 X Lightspeed czarna</li>
+			<li>Klawiatura: SPC Gear GK550 Omnis Kailh Brown RGB</li>
+			<li>Fotel: HUZARO FORCE 6.0 Red Gaming Armchair</li>
+			<li>Biurko: Ultradesk LEVEL V2 LED RGB (Czarne) (elektryczna regulacja)</li>
+			<li>Podkładka: Ultradesk LEVEL V2 LED RGB (Razem z biurkiem)</li>
+			<li>Kamera: Logitech HD Pro C920</li>
+			<li>Tablet graficzny: XP-PEN Star G640</li>
+			<li>Gamepad: PowerA przewodowy Xbox Series / Xbox One</li>
+			<li>Gamepad: Kontroler do gier NO DRIFT ManbaOne z interaktywnym ekranem</li>
+		</ul>
+	</section>
+        
+        <section id="o-mnie" class="card mt-22">
+			<div class="about-me-layout">
+				<div class="about-me-thumb">
+					<img src="assets/images/logo.png" alt="Logo Endixendi" class="about-me-logo">
+				</div>
+				<div class="about-me-text">
+					<h2>O mnie</h2>
+					<p>
+						Moja przygoda z&nbsp;tworzeniem treści rozpoczęła się w&nbsp;2014 roku, kiedy na&nbsp;moim kanale YouTube „Endixendi” hobbystycznie opublikowałem pierwsze filmy. To&nbsp;właśnie wtedy wystartowała seria z&nbsp;MTA, która błyskawicznie zdobyła uznanie widzów – do&nbsp;dziś wspominam tamten okres z&nbsp;ogromnym sentymentem. Choć z&nbsp;czasem obowiązki szkolne oraz wymagające studia zmusiły mnie do&nbsp;chwilowego zwolnienia tempa, pasja do&nbsp;gier i&nbsp;dzielenia się swoją rozgrywką nigdy we&nbsp;mnie nie&nbsp;zgasła.
+					</p>
+					<p>
+						Dziś powracam z&nbsp;nową energią, regularnie nagrywając gameplaye, tworząc praktyczne poradniki oraz dzieląc się wiedzą z&nbsp;pogranicza gamingu i&nbsp;nowych technologii. Jako inżynier informatyki pracujący na&nbsp;co dzień w&nbsp;zawodzie, wykorzystuję zdobyte umiejętności techniczne do&nbsp;stałego podnoszenia jakości moich materiałów, optymalizacji oraz automatyzacji pracy nad kanałem. Praca w&nbsp;IT i&nbsp;tworzenie treści w&nbsp;sieci idealnie się uzupełniają, będąc dla mnie kolejnym krokiem w&nbsp;stronę pełnej profesjonalizacji mojej twórczości.
+					</p>
+					<p>
+						Mój kanał to&nbsp;jednak coś więcej niż same filmy – to&nbsp;przede wszystkim zaangażowana społeczność, która jest dla mnie priorytetem. Moim celem jest nie&nbsp;tylko dostarczanie rozrywki, ale też inspirowanie innych, wymiana doświadczeń i&nbsp;wspólne budowanie wyjątkowego miejsca w&nbsp;sieci, gdzie pasja do&nbsp;gier realnie łączy ludzi z&nbsp;całej Polski i&nbsp;świata.
+					</p>
+				</div>
+			</div>
+		</section>
+
+        <section id="kontakt" class="grid mt-22">
+            <div class="card">
+                <h2>Kontakt</h2>
+                <p>Email: <a class="inline-link" href="mailto:kontakt.endixendi@gmail.com">kontakt.endixendi@gmail.com</a></p>
+                <p>Discord: <a href="https://discord.com/invite/MwGVnXWUaW" target="_blank" rel="noopener" class="inline-link">Endixendi</a></p>
+                <p>Social Media: <a class="inline-link" href="https://linktr.ee/endixendi" target="_blank" rel="noopener">linktr.ee/endixendi</a></p>
+                
+                <button class="btn btn-full-width margin-special" id="donate-btn">Donate</button>
+            </div>
+
+            <div class="card qr-card">
+                <h3>Skrót mobilny</h3>
+                <p class="muted">Zeskanuj, aby otworzyć linki na telefonie</p>
+                <div class="qr-wrapper">
+                    <img src="assets/images/qr-mobile.webp" alt="Kod QR Linktree" class="qr-code-large">
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-22">
+			<div class="card center">
+				<h2>📸 Instagram & Spotify 🎵</h2>
+				<p class="muted">Zobacz moje ostatnie posty oraz posłuchaj wyselekcjonowanej muzyki, która towarzyszy mi.</p>
+				<div class="mt-12">
+					<a class="btn" href="media.html">Odwiedź stronę Media</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- PC 140x600 | Mobile 400x80 -->
+		<div id="navigation-left-panel" class="site-shortcut-panel pc-only" style="left: 20px;">
+			<button class="shortcut-close-trigger" onclick="dismissPanel('navigation-left-panel')">×</button>
+			<div class="shortcut-holder">
+				<div class="shortcut-item" data-id="goldsaver"><a href="https://goldsaver.pl/pl/kod/4TK7PP" target="_blank" rel="noopener"><img src="assets/images/promos/goldsaver.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="dc"><a href="https://discord.com/invite/MwGVnXWUaW" target="_blank" rel="noopener"><img src="assets/images/promos/dc.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="instant"><a href="https://www.instant-gaming.com/pl/?igr=endixendi" target="_blank" rel="noopener"><img src="assets/images/promos/instantgaming.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="tipply"><a href="https://tipply.pl/@endixendi" target="_blank" rel="noopener"><img src="assets/images/promos/tipply.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="cs"><a href="https://csgo-skins.com/?ref=ENDIXENDI" target="_blank" rel="noopener"><img src="assets/images/promos/cs.jpg" alt="Navigation"></a></div>
+			</div>
+		</div>
+
+		<div id="navigation-right-panel" class="site-shortcut-panel pc-only" style="right: 20px;">
+			<button class="shortcut-close-trigger" onclick="dismissPanel('navigation-right-panel')">×</button>
+			<div class="shortcut-holder">
+				<div class="shortcut-item" data-id="goldsaver"><a href="https://goldsaver.pl/pl/kod/4TK7PP" target="_blank" rel="noopener"><img src="assets/images/promos/goldsaver.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="dc"><a href="https://discord.com/invite/MwGVnXWUaW" target="_blank" rel="noopener"><img src="assets/images/promos/dc.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="instant"><a href="https://www.instant-gaming.com/pl/?igr=endixendi" target="_blank" rel="noopener"><img src="assets/images/promos/instantgaming.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="tipply"><a href="https://tipply.pl/@endixendi" target="_blank" rel="noopener"><img src="assets/images/promos/tipply.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="cs"><a href="https://csgo-skins.com/?ref=ENDIXENDI" target="_blank" rel="noopener"><img src="assets/images/promos/cs.jpg" alt="Navigation"></a></div>
+			</div>
+		</div>
+
+		<div id="mobile-sticky-footer" class="mobile-navigation-bar mobile-only">
+			<button class="shortcut-close-trigger" onclick="dismissPanel('mobile-sticky-footer')">×</button>
+			<div class="shortcut-holder">
+				<div class="shortcut-item" data-id="goldsaver"><a href="https://goldsaver.pl/pl/kod/4TK7PP" target="_blank" rel="noopener"><img src="assets/images/promos/mcs.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="dc"><a href="https://discord.com/invite/MwGVnXWUaW" target="_blank" rel="noopener"><img src="assets/images/promos/mdc.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="instant"><a href="https://www.instant-gaming.com/pl/?igr=endixendi" target="_blank" rel="noopener"><img src="assets/images/promos/minstantgaming.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="tipply"><a href="https://tipply.pl/@endixendi" target="_blank" rel="noopener"><img src="assets/images/promos/mtipply.jpg" alt="Navigation"></a></div>
+				<div class="shortcut-item" data-id="cs"><a href="https://csgo-skins.com/?ref=ENDIXENDI" target="_blank" rel="noopener"><img src="assets/images/promos/mcs.jpg" alt="Navigation"></a></div>
+			</div>
+		</div>
+		
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="assets/js/script.js"></script>
+
+</body>
+</html>

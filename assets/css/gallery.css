@@ -1,0 +1,223 @@
+/* ==========================================================================
+   GALLERY STYLES - OPTIMIZED
+   ========================================================================== */
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.gallery-item {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.3s ease, transform 0.3s ease;
+    /* Isolation zapobiega glitchom przy zaokrąglonych rogach */
+    isolation: isolate; 
+    position: relative;
+}
+
+/* Efekt delikatnego uniesienia całej karty */
+.gallery-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-5px);
+}
+
+.gallery-item img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    background-color: #2c3e50;
+    
+    /* KONFIGURACJA ANIMACJI ZDJĘCIA */
+    will-change: transform;
+    transition: transform 0.5s ease-out !important;
+    transform: scale(1);
+}
+
+/* EFEKT ZOOM PO NAJECHANIU */
+.gallery-item:hover img {
+    transform: scale(1.1) !important;
+}
+
+.gallery-caption {
+    padding: 15px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 500;
+    /* Opcjonalnie: wymuś min. wysokość, by grid był idealnie równy */
+    min-height: 50px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Loader wizualny przed załadowaniem zdjęcia */
+.img-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: none; /* Pokazuje się tylko gdy potrzebny */
+}
+
+/* ==========================================================================
+   CINEMA GALLERY STYLE (SLIDER Z MINIATURKAMI)
+   ========================================================================== */
+
+.cinema-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Główny kontener kinowego podglądu */
+.cinema-display {
+    position: relative;
+    width: 100%;
+    max-width: var(--maxw);
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #07070a;
+}
+
+.cinema-display img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+/* Boczne przyciski/strzałki */
+.cinema-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(20, 23, 27, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 22px;
+    padding: 14px 16px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.cinema-arrow:hover {
+    background: rgba(20, 23, 27, 0.9);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.cinema-arrow.prev { left: 0; border-radius: 0 8px 8px 0; }
+.cinema-arrow.next { right: 0; border-radius: 8px 0 0 8px; }
+
+/* Rząd miniaturek pod dużym zdjęciem */
+.cinema-thumbnails {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 10px 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Pojedyncza miniatura */
+.cinema-thumb {
+    width: 110px;
+    min-width: 110px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0.35;
+    border: 2px solid transparent;
+    transition: opacity var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.cinema-thumb:hover, 
+.cinema-thumb.active {
+    opacity: 1;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+/* Pasek przewijania miniatur dla przeglądarek Webkit (Chrome/Safari) */
+.cinema-thumbnails::-webkit-scrollbar {
+    height: 6px;
+}
+.cinema-thumbnails::-webkit-scrollbar-track {
+    background: transparent;
+}
+.cinema-thumbnails::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+.cinema-thumbnails::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================================================
+   ANIMACJE I WSPARCIE DLA CZERWONEGO MOTYWU (body.theme-red)
+   ========================================================================== */
+
+/* Zmiana akcentów galerii w trybie czerwonym */
+body.theme-red .gallery-item:hover {
+    border-color: #ff0000 !important;
+}
+
+body.theme-red .img-loader {
+    border-top-color: #ff0000 !important;
+}
+
+body.theme-red .cinema-arrow:hover {
+    color: #ff0000 !important;
+    border-color: #ff0000 !important;
+}
+
+body.theme-red .cinema-thumb:hover, 
+body.theme-red .cinema-thumb.active {
+    border-color: #ff0000 !important;
+}
+
+body.theme-red .cinema-thumbnails::-webkit-scrollbar-thumb:hover {
+    background: #ff0000 !important;
+}
+
+/* ==========================================================================
+   Responsywność i ekrany dotykowe (Media Queries)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Mniejsze kafelki na telefonie */
+        gap: 12px;
+    }
+
+    .cinema-arrow {
+        font-size: 18px;
+        padding: 10px 12px; /* Zmniejszone strzałki, by nie zasłaniały kadru */
+    }
+
+    .cinema-thumb {
+        width: 85px; /* Nieco mniejsze miniaturki na ekranach mobilnych */
+        min-width: 85px;
+    }
+}

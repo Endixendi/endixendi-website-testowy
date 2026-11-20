@@ -1,0 +1,1411 @@
+/* ==========================================================================
+   Zmienne globalne
+   ========================================================================== */
+
+:root {
+    --bg: #0f1115;            /* Tło strony  #0f1115*/
+    --card: #14171b;          /* Tło kart/sekcji */
+    --muted: #98a0aa;         /* Kolor przygaszonego tekstu */
+    --accent: #00aaff;        /* Kolor akcentu 1 (np. linki) */
+    --accent-2: #00aaff;      /* Kolor akcentu 2 (np. gradienty) #ffcc00;*/
+    --border: rgba(255, 255, 255, 0.06); /* Zmienna granicy kart */
+    --glass: rgba(255, 255, 255, 0.03); /* Efekt szkła */
+    --maxw: 1100px;           /* Maksymalna szerokość kontenera */
+    --transition: 0.25s ease;
+    font-family: Inter, system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { 
+    box-sizing: border-box;   /* Ułatwia kontrolę nad padding/margin */
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px; 
+}
+
+body {
+    background: linear-gradient(180deg, #07070a 0%, var(--bg) 100%);
+    color: #e6eef6;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color-scheme: dark;
+}
+
+img, video, iframe {
+    max-width: 100%;
+    display: block;
+}
+
+button, input, textarea, select {
+    font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.center {
+  text-align: center;
+}
+
+/* ==========================================================================
+   Nagłówek i menu główne (Nowoczesny Glassmorphism & Sticky)
+   ========================================================================== */
+
+header {
+    position: sticky;         /* Zawsze przyklejony u góry */
+    top: 0;
+    background: rgba(15, 17, 21, 0.75); /* Przezroczyste tło dopasowane do --bg */
+    backdrop-filter: blur(12px);       /* Zwiększone rozmycie dla nowoczesnego efektu szkła */
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 500;              /* Podniesiony zindex, by menu zawsze było nad elementami gry */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 12px 20px;
+    transition: background var(--transition), border-color var(--transition);
+}
+
+.nav {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between; /* brand po lewej, menu po prawej */
+    align-items: center;
+    gap: 20px;
+}
+
+/* Brand (logo + nazwa) */
+.brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    text-decoration: none; /* Reset dla linku otaczającego brand */
+}
+
+.brand .logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Obrazek nie zniekształca się */
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.brand:hover .logo-img {
+    transform: rotate(12deg) scale(1.05); /* Delikatna mikrointerakcja logo */
+}
+
+.brand-name { 
+    font-weight: 800; 
+    color: #fff;
+} 
+
+.brand-subtitle { 
+    font-size: 12px; 
+    color: var(--muted); 
+    margin-top: 2px; 
+}
+
+/* Linki w menu głównym */
+#main-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#main-nav > a, .dropbtn {
+    text-decoration: none;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+#main-nav > a:hover, .dropdown:hover .dropbtn { 
+    color: var(--accent); 
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Wsparcie dla linku aktywnego (wskazywanego przez podstronę) */
+#main-nav a.active {
+    color: var(--accent);
+    background: rgba(0, 170, 255, 0.06);
+}
+
+/* ==========================================================================
+   Rozwijane menu (Dropdown z płynną animacją fade-in & slide-up)
+   ========================================================================== */
+
+.dropdown { 
+    position: relative; 
+    display: inline-block; 
+}
+
+/* Nowoczesne wyrównanie przycisku menu i przygotowanie pod strzałkę CSS */
+.dropbtn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px; /* Idealny, stały odstęp od tekstu */
+}
+
+/* Automatyczna strzałka geometryczna */
+.dropbtn::after {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid currentColor; /* Dynamicznie przyjmuje kolor tekstu menu */
+    opacity: 0.7;
+    transition: transform var(--transition);
+}
+
+/* Obrót strzałki po najechaniu na menu dropdown (Desktop) */
+.dropdown:hover .dropbtn::after {
+    transform: rotate(180deg);
+}
+
+.dropdown-content {
+    display: block; 
+    pointer-events: auto;
+    position: absolute;
+    background-color: #14171b; 
+    min-width: 200px;
+    border-radius: 10px;
+    top: calc(100% + 6px);
+    right: 0; 
+    padding: 6px 0;
+    z-index: 600;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    
+    /* Stan początkowy animacji */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+/* Aktywacja stanu rozwijanego po najechaniu kursorem */
+.dropdown:hover .dropdown-content { 
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 10px 16px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.dropdown-content a:hover {
+    background: rgba(0, 170, 255, 0.08);
+    color: #fff;
+    padding-left: 20px; /* Eleganckie przesunięcie w prawo podczas hoveru */
+}
+
+/* ==========================================================================
+   Hamburger (Konfiguracja bazowa pod Mobile)
+   ========================================================================== */
+
+.menu-icon {
+    display: none;
+    font-size: 24px;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background var(--transition);
+}
+
+.menu-icon:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   Kontener loadera - przykrywa cały ekran
+   ========================================================================== */
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #07070a; /* Kolor Twojego tła */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Musi być nad wszystkim innym */
+    transition: opacity 0.5s ease; /* Płynne znikanie */
+}
+
+/* Animacja kręcenia logo */
+.loader-logo {
+    width: 300px;
+    height: 300px;
+    animation: spin 3s linear infinite;
+    object-fit: contain;                                     /* Dodatkowo warto dodać to, aby logo było ostre */
+    filter: drop-shadow(0 0 150px rgba(29, 63, 143, 1.0));   /* Efekt niebieskiej poświaty pasującej do Twojego akcentu */
+}
+
+@keyframes spin {
+    from { 
+        transform: rotate(0deg); 
+    }
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* Klasa do ukrycia loadera przez JS */
+.loader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Sekcja main i układy kart
+   ========================================================================== */
+
+main {
+    max-width: var(--maxw);
+    margin: 28px auto;
+    padding: 0 16px;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Lewa większa, prawa mniejsza */
+    gap: 24px;
+    align-items: start;
+}
+
+.hero > .card-container {
+    flex: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dwie karty w rzędzie */
+    gap: 16px;
+}
+
+.hero > aside { 
+    flex: 1; 
+}
+
+.hero > * {
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    background: var(--card);
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: transform var(--transition), 
+                box-shadow var(--transition), 
+                border-color var(--transition);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 
+                0 0 20px rgba(0, 170, 255, 0.15); 
+    border-color: var(--accent); 
+    opacity: 1;
+}
+
+.hero h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+
+.lead { 
+    color: var(--muted); 
+    margin-bottom: 12px; 
+}
+
+.cta { 
+    display: flex; 
+    gap: 10px; 
+}
+
+/* ==========================================================================
+   Przyciski i interakcje UI
+   ========================================================================== */
+
+.btn,
+a.btn {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #071017;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efekt po naciśnięciu (kliknięciu) przycisku */
+.btn:active,
+a.btn:active,
+.ghost:active {
+    transform: scale(0.96); /* Lekkie zmniejszenie (efekt wciśnięcia) */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* Zmniejszenie cienia, by przycisk wydawał się bliżej tła */
+    opacity: 0.9; /* Delikatna zmiana przezroczystości */
+}
+
+/* Efekty hover zunifikowane pod kątem wydajności przejść */
+.btn:hover,
+a.btn:hover,
+.ghost:hover,
+a.inline-link:hover {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover,
+a.btn:hover { 
+    opacity: 0.85; 
+}
+
+.btn.mt-12,
+a.btn.mt-12 { 
+    margin-top: 12px; 
+}
+
+.ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--muted);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease;
+}
+
+.ghost:hover { 
+    border-color: var(--accent); 
+    color: var(--accent); 
+}
+
+/* ==========================================================================
+   Tabele, Siatki strukturalne i Wideo
+   ========================================================================== */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.full { 
+    grid-column: 1 / -1; 
+} 
+
+table.specs {
+    border-collapse: collapse;
+}
+
+table.specs td:first-child {
+    width: 230px;
+}
+
+table.specs td,
+table.specs th {
+    padding: 10px;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.cat {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 15%, transparent), transparent); 
+    color: var(--accent); 
+    font-weight: 700;
+    padding-left: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.videos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 20px; 
+}
+
+.video iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    border: 0;
+}
+
+.video-title {
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Stopka globalna (Nowoczesny układ wielokolumnowy)
+   ========================================================================== */
+
+footer {
+    margin-top: 80px; 
+    padding: 60px 20px;
+    background: linear-gradient(180deg, #14171b 0%, #050505 100%);
+    border-top: 1px solid rgba(0, 170, 255, 0.1); 
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.footer-content {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Kolumna z marką i opisem */
+.footer-brand .brand-name {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 1px;
+    text-align: left;
+}
+
+.footer-info-text {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-top: 10px;
+    max-width: 360px;
+    text-align: left;
+}
+
+/* Główna siatka stopki (Desktop) */
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, 1fr); /* Pierwsza kolumna szeroka, reszta równe */
+    gap: 40px;
+    margin-bottom: 10px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-column h3 {
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+/* Linki wewnątrz kolumn i mikrointerakcja hoveru */
+.footer-column a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+    transition: color var(--transition), transform var(--transition);
+}
+
+.footer-column a:hover {
+    color: var(--accent);
+    transform: translateX(4px); /* Płynne wysunięcie w prawo */
+}
+
+/* Specjalny kolor dla linku Donate */
+.footer-column a.footer-accent-link {
+    color: var(--accent-2);
+    font-weight: 700;
+}
+
+.footer-column a.footer-accent-link:hover {
+    color: #fff;
+}
+
+/* Elementy strukturalne i dolny pasek */
+.footer-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass), transparent);
+    margin: 25px 0;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.footer-meta {
+    color: var(--muted);
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   RESPONSYWNOŚĆ (Media Queries)
+   ========================================================================== */
+
+/* Tablety i mniejsze monitory */
+@media screen and (max-width: 900px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr); /* Przełączenie na 2 kolumny */
+        gap: 30px;
+    }
+}
+
+/* Smartfony i ekrany mobilne */
+@media screen and (max-width: 600px) {
+    .footer-brand .brand-name {
+        text-align: center;
+    }
+
+    .footer-info-text {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr; /* Wszystko w jednej kolumnie pionowo */
+        text-align: center;
+        gap: 26px;
+    }
+    
+    .footer-column {
+        align-items: center; /* Wyśrodkowanie nagłówków i linków */
+    }
+
+    .footer-column a:hover {
+        transform: none; /* Wyłączenie efektu przesunięcia na dotyku */
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* ==========================================================================
+   Widgety zewnętrzne (Snapwidget, Spotify) i Klasy pomocnicze
+   ========================================================================== */
+
+.widget-margin-top {
+	margin-top: 20px;
+}
+
+.snapwidget-widget {
+    border: none;
+    overflow: hidden;
+    width: 100%;
+	/*height: 380px;*/
+    margin-top: 20px;
+}
+
+.muted { 
+    color: var(--muted); 
+}
+
+a.inline-link {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a.inline-link:hover { 
+    text-decoration: underline; 
+}
+
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-18 { margin-top: 18px; }
+.mt-22 { margin-top: 22px; }
+
+/* ==========================================================================
+   Struktury list (Tekst specyfikacji PC itp.)
+   ========================================================================== */
+
+ul, ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+li {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+.specs + ul {
+    margin-top: 12px;
+}
+
+.specs + ul li {
+    position: relative;
+    padding-left: 8px;
+    list-style-type: none;
+}
+
+.specs + ul li:before {
+    content: "•";
+    position: absolute;
+    left: -16px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.controls-left ul {
+    margin: 0;
+    padding-left: 18px;
+    list-style: none;
+}
+
+.controls-left li {
+    margin: 8px 0;
+    font-size: 16px;
+    position: relative;
+    padding-left: 8px;
+}
+
+.controls-left li:before {
+    content: "•";
+    position: absolute;
+    left: -12px;
+    color: var(--accent);
+}
+
+.side.left ul {
+    margin: 12px 0;
+    padding-left: 20px;
+    list-style: none;
+}
+
+.side.left li {
+    margin: 8px 0;
+    position: relative;
+    padding-left: 8px;
+}
+
+.side.left li:before {
+    content: "•";
+    position: absolute;
+    left: -12px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Dedykowane klasy struktur indeksu
+   ========================================================================== */
+
+.hero-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    height: 100%;
+}
+
+.discord-link {
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color var(--transition);
+}
+
+.discord-link:hover {
+    color: #fff;
+}
+
+.discord-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.btn-full-width {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px !important;
+}
+
+.spotify-embed {
+    border-radius: 12px;
+    border: none;
+    margin-top: 20px;
+}
+
+.qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
+}
+
+.qr-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.qr-code-large {
+    width: 150px;
+    height: auto;
+    border-radius: 12px;
+    border: 3px solid var(--accent); 
+    padding: 10px;
+    transition: transform var(--transition), border-color var(--transition);
+}
+
+.qr-code-large:hover {
+    transform: scale(1.08); 
+}
+
+.margin-special {
+    margin-top: 15px !important;
+}
+
+.controls-left {
+    position: relative;
+    z-index: 1;
+}
+
+.controls-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.7;
+}
+
+.ssd-list {
+    white-space: pre-line;
+}
+
+/* ==========================================================================
+   SUWAKI W GRACH (Zunifikowane szablony)
+   ========================================================================== */
+
+.audio-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.volume-control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.volume-control label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.volume-control input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    transition: background 0.2s;
+}
+
+.volume-control input[type="range"]:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #fff;
+}
+
+.volume-control input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.volume-control input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    background: #fff;
+}
+
+/* ==========================================================================
+   DODATKI SEZONOWE I SYSTEM MOTYWÓW KOLORYSTYCZNYCH
+   ========================================================================== */
+
+.seasonal-particle {
+    position: fixed;
+    top: -30px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to { 
+        transform: translateY(110vh) rotate(360deg); 
+    }
+}
+
+#toggle-effects-btn {
+    display: none;
+}
+
+body.effects-off .seasonal-particle {
+    display: none !important;
+}
+
+/* Motywy podstawowe */
+body.theme-winter     { --accent: #ffffff; --accent-2: #add8e6; }
+body.theme-spring     { --accent: #4ade80; --accent-2: #facc15; }
+body.theme-summer     { --accent: #fbbf24; --accent-2: #f87171; }
+body.theme-autumn     { --accent: #fb923c; --accent-2: #78350f; }
+body.theme-patriotic  { --accent: #ffffff; --accent-2: #ff4d4d; }
+body.theme-birthday   { --accent: #f472b6; --accent-2: #22d3ee; }
+body.theme-youtube    { --accent: #ff1606; --accent-2: #ffffff; }
+body.theme-new        { --accent: #ffff06; --accent-2: #ffa12c; }
+
+/* Motyw: CZERWONY (Jednolity) */
+body.theme-red	 	{ --accent: #ff0000; --accent-2: #ff0000; }
+
+/* Motyw: ZIELONY (Jednolity) */
+body.theme-green 	{ --accent: #00dc04; --accent-2: #00dc04; }
+
+/* Motyw: FABRYCZNY (Niebieski) */
+/* body.theme-default { --accent: #00aaff; --accent-2: #00aaff; } */
+body.theme-blue 	{ --accent: #00aaff; --accent-2: #00aaff; }
+
+/* Nowe, dynamiczne dopasowanie menu do czerwonego motywu */
+body.theme-red .btn {
+    background: #ff0000 !important;
+    color: #ffffff !important; 
+}
+
+body.theme-red header {
+    background: rgba(20, 10, 10, 0.85);
+    border-bottom-color: rgba(255, 0, 0, 0.2);
+}
+
+body.theme-red .dropdown-content {
+    background: #1a1010;
+    border-color: rgba(255, 0, 0, 0.2);
+}
+
+body.theme-red .dropdown-content a:hover {
+    background: rgba(255, 0, 0, 0.15);
+    color: #ff4d4d;
+}
+
+body.theme-red #main-nav a.active {
+    color: #ff4d4d;
+    background: rgba(255, 0, 0, 0.08);
+}
+
+/* Nowe, dynamiczne dopasowanie menu do zielonego motywu */
+body.theme-green .btn {
+    background: #00dc04 !important;
+    color: #000000 !important; 
+}
+
+body.theme-green header {
+    background: rgba(10, 20, 10, 0.85);
+    border-bottom-color: rgba(0, 128, 0, 0.3);
+}
+
+body.theme-green .dropdown-content {
+    background: #0a140a;
+    border-color: rgba(0, 128, 0, 0.3);
+}
+
+body.theme-green .dropdown-content a:hover {
+    background: rgba(0, 128, 0, 0.2);
+    color: #2eaf2e;
+}
+
+body.theme-green #main-nav a.active {
+    color: #2eaf2e;
+    background: rgba(0, 128, 0, 0.15);
+}
+
+/* ==========================================================================
+   Pływający przycisk powrotu na górę strony (Fixed)
+   ========================================================================== */
+.floating-back-to-top {
+    position: fixed; /* Przykleja przycisk do ekranu, nie do zawartości strony */
+    bottom: 30px;    /* Odległość od dolnej krawędzi ekranu */
+    right: 30px;     /* Odległość od prawej krawędzi ekranu */
+    width: 44px;
+    height: 44px;
+    line-height: 42px; /* Centrowanie strzałki w pionie */
+    text-align: center;
+    background: #14171b; /* Identyczne tło jak karty, by nic nie prześwitywało */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    border-radius: 50%; /* Okrągły kształt */
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    z-index: 1000;   /* Bardzo wysoki z-index, żeby strzałka była nad grami i sekcjami */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    
+    /* Stan początkowy: przycisk jest niewidoczny i lekko obniżony */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Klasa aktywowana przez JavaScript, gdy użytkownik przewinie stronę w dół */
+.floating-back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0); /* Płynne wysunięcie do góry */
+}
+
+/* Efekt po najechaniu myszką */
+.floating-back-to-top:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-5px); /* Delikatne uniesienie (mikrointerakcja) */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 
+                0 0 15px rgba(0, 170, 255, 0.3);
+}
+
+/* Dynamiczne dopasowanie do czerwonego motywu serwisu */
+body.theme-red .floating-back-to-top:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 
+                0 0 15px rgba(255, 0, 0, 0.3) !important;
+}
+
+/* Dostosowanie wielkości przycisku na mniejszych ekranach (smartfony) */
+@media (max-width: 600px) {
+    .floating-back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        line-height: 38px;
+    }
+}
+
+/* ==========================================================================
+   Sekcja O mnie - Stylizacja z logo
+   ========================================================================== */
+
+.about-me-layout {
+    display: flex;
+    align-items: center; /* Wyśrodkowanie pionowe logo względem bloku tekstu */
+    gap: 30px;           /* Odstęp między zdjęciem a tekstem */
+}
+
+.about-me-thumb {
+    flex: 0 0 180px;     /* Stała szerokość kolumny z logo na desktopie */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.about-me-logo {
+    width: 100%;
+    max-width: 180px;    /* Bezpieczny wymiar grafiki */
+    height: auto;
+    border-radius: 16px; /* Pasujące zaokrąglenie do Twoich kart */
+    border: 2px solid var(--border);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent); /* Neonowy glow */
+    object-fit: cover;
+    transition: transform var(--transition), border-color var(--transition);
+}
+
+.about-me-text {
+    flex: 1;             /* Tekst zajmuje całą pozostałą przestrzeń */
+}
+
+/* Zachowanie spójności akapitów wewnątrz bloku */
+.about-me-text p + p {
+    margin-top: 12px;
+}
+
+/* Mikrointerakcja powiązana z hoverem całej karty (zgodnie z Twoim stylem) */
+.card:hover .about-me-logo {
+    transform: rotate(-3deg) scale(1.03); /* Delikatne wychylenie w lewo */
+    border-color: var(--accent);
+}
+
+/* REPOZYTORIUM MOBILNE (Media Query dla ekranów mniejszych niż desktop) */
+@media screen and (max-width: 768px) {
+    .about-me-layout {
+        flex-direction: column; /* Układ pionowy na smartfonach */
+        gap: 20px;
+        text-align: center;     /* Wyśrodkowanie tekstu i nagłówka */
+    }
+
+    .about-me-thumb {
+        flex: 0 0 auto;
+    }
+
+    .about-me-logo {
+        max-width: 140px;       /* Nieco mniejsze logo na ekranach telefonów */
+    }
+}
+
+/* ==========================================================================
+   Stylizacja ujednoliconej listy źródeł audio (Sekcja #controls)
+   ========================================================================== */
+
+/* Główna lista (Muzyka i Efekty) */
+#controls ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 12px 0 0 0;
+}
+
+#controls ul li {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+/* Wewnętrzna podlista (konkretne akcje SFX) */
+#controls ul ul {
+    list-style-type: disc; /* Przywraca standardowe okrągłe kropki */
+    list-style-position: outside; /* Gwarantuje, że kropki stoją w równej kolumnie poza tekstem */
+    padding-left: 24px; /* Bezpieczne odsunięcie w prawo - kropki nie najeżdżają na tekst */
+    margin-top: 6px;
+    margin-bottom: 0;
+}
+
+#controls ul ul li {
+    margin: 4px 0;
+    position: relative;
+    padding-left: 4px;
+}
+
+/* Kolorowanie kropek podlisty na kolor akcentu (zgodnie z Twoim stylem list w specs) */
+#controls ul ul li::marker {
+    color: var(--accent);
+}
+
+/* ==========================================================================
+   RESPONSYWNOŚĆ I MEDIA QUERIES (Mobilne Menu Hamburgerowe)
+   ========================================================================== */
+
+section { 
+    scroll-margin-top: 90px; 
+}
+
+/* ==========================================================================
+   ZAKAMUFLOWANY SYSTEM SKRÓTÓW STRONY (INDEX)
+   ========================================================================== */
+
+/* Podział na wersje urządzeń */
+@media screen and (min-width: 1201px) {
+    .pc-only { display: block !important; }
+    .mobile-only { display: none !important; }
+}
+@media screen and (max-width: 1200px) {
+    .pc-only { display: none !important; }
+    .mobile-only { display: block !important; }
+}
+
+/* Główne kontenery boczne (PC) */
+.site-shortcut-panel {
+    display: none; /* JS pokaże cały panel */
+    position: fixed;
+    top: 15vh;
+    width: 142px;
+    height: 602px;
+    background: rgba(20, 24, 33, 0.9);
+    border: 2px dashed var(--accent);
+    border-radius: 8px;
+    z-index: 999;
+}
+
+/* Zarządzanie widocznością kafelków wewnątrz kontenera */
+.shortcut-holder {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.shortcut-item {
+    display: none; /* Domyślnie wszystkie kafelki są ukryte */
+    width: 100%;
+    height: 100%;
+}
+
+.shortcut-item.is-active {
+    display: block !important; /* Pokazuje tylko wylosowany aktywowany kafelek */
+}
+
+.shortcut-item a, .shortcut-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Przycisk zamknięcia panelu */
+.shortcut-close-trigger {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 1010;
+    transition: background 0.2s;
+}
+.shortcut-close-trigger:hover {
+    background: #ef4444;
+}
+
+/* WERSJA MOBILNA (Dolny pasek) */
+.mobile-navigation-bar {
+    display: none !important;
+    position: fixed;
+    bottom: 20px;
+    left: 5%;
+    width: 90%;
+    height: 76px;
+    background: rgba(20, 24, 33, 0.95);
+    border: 2px dashed var(--accent);
+    border-radius: 8px;
+    z-index: 9999;
+    overflow: hidden;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
+    animation: triggerMobileSlide 0.4s ease-out forwards;
+}
+
+@keyframes triggerMobileSlide {
+    from { transform: translateY(120px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   WERSJA MOBILNA
+   ========================================================================== */
+
+@media screen and (max-width: 1200px) {
+    .menu-icon { 
+        display: block; 
+        color: var(--accent); /* Zmieniono z białego na kolor motywu strony */
+        font-weight: bold;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    #main-nav {
+        display: none;            
+        flex-direction: column;   
+        gap: 12px;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #14171b; /* var(--card) */
+        padding: 20px;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: 499;
+        text-align: center; /* Wyśrodkowanie linków głównych */
+        max-height: calc(100vh - 72px);
+        overflow-y: auto;
+    }
+
+    /* Klasa aktywowana przez skrypt JS po kliknięciu hamburgera */
+    #main-nav.show {
+        display: flex;
+    }
+    
+    .dropdown {
+        width: 100%;
+        text-align: center; /* Wyśrodkowanie przycisków "Gry ▾" itp. */
+    }
+
+    .dropdown-content { 
+        position: relative; 
+        box-shadow: none;
+        width: 100%;
+        top: 0;
+        background: rgba(0, 0, 0, 0.2);
+        border: none;
+        margin-top: 6px;
+        border-radius: 8px;
+        
+        /* Wyłączenie desktopowych efektów najechania myszką */
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        
+        /* Domyślnie ukryte na telefonie, dopóki użytkownik nie kliknie */
+        display: none; 
+        text-align: center; /* Wyśrodkowanie linków wewnątrz podmenu */
+    }
+
+    /* Klasa sterowana za pomocą JS po kliknięciu w podkategorię */
+    .dropdown.open .dropdown-content {
+        display: block;
+    }
+
+    /* Marginesy dla linków wewnątrz podmenu na telefonie */
+    .dropdown-content a {
+        padding: 12px 16px;
+    }
+    
+    .dropdown-content a:hover {
+        padding-left: 16px; /* Wyłączenie przesunięcia w prawo na telefonie */
+        background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .hero {
+        grid-template-columns: 1fr; 
+        gap: 16px;
+    }
+    
+    .hero > .card-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .nav { 
+        padding: 10px; 
+        flex-wrap: wrap; 
+    }
+    
+    .brand .logo { 
+        width: 40px; 
+        height: 40px; 
+    }
+    
+    .grid { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .video iframe { 
+        height: 200px; 
+    }
+    
+	.widget-margin-top {
+	margin-top: 20px;
+}
+	
+    .snapwidget-widget { 
+        width: 100%; 
+        height: 1000px%; 
+        aspect-ratio: 25 / 10; 
+    }
+}
+
+/* ==========================================================================
+   SEKCJA LICZNIKÓW NA ŻYWO (LIVECOUNTS)
+   ========================================================================== */
+
+/* Kontener na liczniki Livecounts */
+.live-counters-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 25px 0 10px 0;
+}
+
+/* Pojedyncza ramka z licznikiem */
+.counter-iframe {
+    border: none;
+    width: 280px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+}
