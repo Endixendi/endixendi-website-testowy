@@ -62,11 +62,11 @@ textarea:focus-visible {
 }
 
 /* ==========================================================================
-   Nagłówek i menu główne (Nowoczesny Glassmorphism & Sticky)
+   Nagłówek i menu główne (Nowoczesny Glassmorphism & Sticky na desktopie)
    ========================================================================== */
 
 header {
-    position: sticky;         /* Zawsze przyklejony u góry */
+    position: sticky;         /* Przyklejony u góry na desktopie */
     top: 0;
     background: rgba(15, 17, 21, 0.75); /* Przezroczyste tło dopasowane do --bg */
     backdrop-filter: blur(12px);       /* Zwiększone rozmycie dla nowoczesnego efektu szkła */
@@ -1296,10 +1296,15 @@ section {
 }
 
 /* ==========================================================================
-   WERSJA MOBILNA
+   WERSJA MOBILNA (bez przyklejania nagłówka na telefonie)
    ========================================================================== */
 
 @media screen and (max-width: 1200px) {
+    header {
+        position: static;
+        top: auto;
+    }
+
     .menu-icon { 
         display: block; 
         color: var(--accent);
