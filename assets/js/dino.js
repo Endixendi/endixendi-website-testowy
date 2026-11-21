@@ -80,30 +80,25 @@ function resizeCanvas() {
     const container = canvas.parentElement;
     if (!container) return;
 
-    if (isFullscreenActive()) {
-        const availW = container.clientWidth;
-        const availH = container.clientHeight;
-        const aspect = V_WIDTH / V_HEIGHT;
+    const styles = getComputedStyle(container);
+    const padX = parseFloat(styles.paddingLeft || 0) + parseFloat(styles.paddingRight || 0);
+    const padY = parseFloat(styles.paddingTop || 0) + parseFloat(styles.paddingBottom || 0);
 
-        let targetWidth = availW;
-        let targetHeight = targetWidth / aspect;
+    const innerW = Math.max(100, container.clientWidth - padX);
+    const innerH = Math.max(50, container.clientHeight - padY);
 
-        if (targetHeight > availH) {
-            targetHeight = availH;
-            targetWidth = targetHeight * aspect;
-        }
+    const aspect = V_WIDTH / V_HEIGHT;
+    let targetWidth = innerW;
+    let targetHeight = targetWidth / aspect;
 
-        scale = targetWidth / V_WIDTH;
-        canvas.width = Math.floor(targetWidth);
-        canvas.height = Math.floor(targetHeight);
-    } else {
-        let targetWidth = container.clientWidth;
-        if (targetWidth > 800) targetWidth = 800;
-
-        scale = targetWidth / V_WIDTH;
-        canvas.width = targetWidth;
-        canvas.height = V_HEIGHT * scale;
+    if (targetHeight > innerH) {
+        targetHeight = innerH;
+        targetWidth = targetHeight * aspect;
     }
+
+    scale = targetWidth / V_WIDTH;
+    canvas.width = Math.floor(targetWidth);
+    canvas.height = Math.floor(targetHeight);
 }
 
 function updateFullscreenState() {
