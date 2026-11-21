@@ -209,8 +209,8 @@
     .shooter-stage:fullscreen .shooter-container {
         width: auto !important;
         max-width: 92vw !important;
-        height: calc(100dvh - 88px) !important;
-        max-height: calc(100dvh - 88px) !important;
+        height: calc(100dvh - 82px) !important;
+        max-height: calc(100dvh - 82px) !important;
         aspect-ratio: 4 / 3 !important;
         flex: 0 0 auto !important;
     }
@@ -219,31 +219,34 @@
     .shooter-stage:fullscreen .mobile-controls {
         display: flex !important;
         width: 100% !important;
-        max-width: 700px !important;
+        max-width: 520px !important;
         padding: 4px 10px !important;
-        gap: 12px !important;
+        gap: 14px !important;
         margin-top: 0 !important;
         flex: 0 0 auto !important;
     }
 
     .shooter-stage.is-fullscreen #touchSliderArea,
     .shooter-stage:fullscreen #touchSliderArea {
-        height: 52px !important;
-        border-radius: 26px !important;
+        width: 240px !important;
+        max-width: 240px !important;
+        flex: 0 1 240px !important;
+        height: 50px !important;
+        border-radius: 25px !important;
     }
 
     .shooter-stage.is-fullscreen #sliderHandle,
     .shooter-stage:fullscreen #sliderHandle {
-        width: 42px !important;
-        height: 42px !important;
+        width: 40px !important;
+        height: 40px !important;
         font-size: 16px !important;
     }
 
     .shooter-stage.is-fullscreen .mobile-btn-shoot,
     .shooter-stage:fullscreen .mobile-btn-shoot {
-        flex: 0 0 60px !important;
-        width: 60px !important;
-        height: 60px !important;
+        flex: 0 0 56px !important;
+        width: 56px !important;
+        height: 56px !important;
         font-size: 12px !important;
     }
 
@@ -293,10 +296,11 @@
 
 .mobile-controls {
     display: none;
+    justify-content: center;
     width: 100%;
     max-width: 800px;
     padding: 15px;
-    gap: 15px;
+    gap: 16px;
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 15px;
@@ -307,21 +311,24 @@
 }
 
 #touchSliderArea {
-    flex: 1;
+    width: 240px;
+    max-width: 62%;
+    flex: 0 1 240px;
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid var(--border);
     position: relative;
     display: flex;
     align-items: center;
     touch-action: none;
-    height: 80px;
-    border-radius: 40px;
+    height: 74px;
+    border-radius: 37px;
     padding: 0 10px;
+    box-sizing: border-box;
 }
 
 #sliderHandle {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     background: radial-gradient(circle, var(--accent), var(--accent));
     border-radius: 50%;
     position: absolute;
@@ -360,14 +367,15 @@
 }
 
 .mobile-btn-shoot {
-    flex: 0 0 100px;
-    height: 100px;
+    flex: 0 0 92px;
+    width: 92px;
+    height: 92px;
     border-radius: 50%;
     border: none;
     background: linear-gradient(#ff4d6d, #a30b2e);
     color: white;
     font-weight: 900;
-    font-size: 16px;
+    font-size: 15px;
     text-transform: uppercase;
     box-shadow: 0 6px 0 #6d1526, 0 10px 20px rgba(0, 0, 0, 0.4);
     display: flex;
@@ -441,15 +449,20 @@ body.theme-red .mobile-btn-shoot:active {
 
 @media (max-width: 480px) {
     .mobile-btn-shoot {
-        flex: 0 0 85px;
-        height: 85px;
+        flex: 0 0 80px;
+        width: 80px;
+        height: 80px;
         font-size: 14px;
     }
     #touchSliderArea {
-        height: 70px;
+        width: 210px;
+        max-width: 62%;
+        flex: 0 1 210px;
+        height: 66px;
     }
     #sliderHandle {
-        width: 50px;
-        height: 50px;
+        width: 48px;
+        height: 48px;
     }
+}
 }
