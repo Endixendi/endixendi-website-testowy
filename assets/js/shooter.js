@@ -21,6 +21,8 @@ if (!canvas) {
     const ctx = canvas.getContext("2d");
 
     // Pobieranie elementów HTML (HUD)
+    const shooterStage = document.getElementById("shooterStage");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
     const scoreEl = document.getElementById("score");
     const healthFill = document.getElementById("healthFill");
     const heatFillBar = document.getElementById("heatFillBar");
@@ -77,17 +79,78 @@ if (!canvas) {
         if (k !== 'bg') sounds[k].volume = 0.3;
     });
 
+    function isFullscreenActive() {
+        return Boolean(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            (shooterStage && shooterStage.classList.contains("is-fullscreen"))
+        );
+    }
+
     function resizeCanvas() {
         const container = document.querySelector(".shooter-container");
         if (!container) return;
-        const maxWidth = Math.min(800, container.offsetWidth);
-        canvas.width = maxWidth;
-        canvas.height = Math.floor(maxWidth * 0.75);
+
+        const rect = container.getBoundingClientRect();
+        const width = Math.max(200, Math.floor(rect.width || container.offsetWidth || 800));
+        const height = Math.max(150, Math.floor(rect.height || width * 0.75));
+
+        canvas.width = width;
+        canvas.height = height;
+
         if (gameState.player) {
+            const prevRatio = (canvas.width > 0) ? (gameState.player.x / canvas.width) : 0.5;
             gameState.player.width = canvas.width * 0.06;
             gameState.player.height = gameState.player.width;
-            gameState.player.x = Math.min(gameState.player.x, Math.max(0, canvas.width - gameState.player.width));
+            gameState.player.speed = canvas.width * 0.8;
+            gameState.player.x = Math.min(
+                Math.max(0, prevRatio * canvas.width),
+                Math.max(0, canvas.width - gameState.player.width)
+            );
             gameState.player.y = canvas.height - gameState.player.height - 10;
+        }
+    }
+
+    function updateFullscreenUI() {
+        const active = isFullscreenActive();
+        if (fullscreenBtn) {
+            fullscreenBtn.textContent = active ? "✕" : "⛶";
+            fullscreenBtn.title = active ? "Wyjdź z pełnego ekranu" : "Pełny ekran";
+            fullscreenBtn.setAttribute("aria-label", active ? "Wyjdź z pełnego ekranu" : "Pełny ekran");
+        }
+        document.body.style.overflow = active ? "hidden" : "";
+
+        setTimeout(() => {
+            resizeCanvas();
+        }, 50);
+    }
+
+    function toggleFullscreen() {
+        if (!shooterStage) return;
+
+        if (isFullscreenActive()) {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitFullscreenElement) {
+                document.webkitExitFullscreen();
+            }
+            shooterStage.classList.remove("is-fullscreen");
+            updateFullscreenUI();
+        } else {
+            if (shooterStage.requestFullscreen) {
+                shooterStage.requestFullscreen().then(() => {
+                    updateFullscreenUI();
+                }).catch(() => {
+                    shooterStage.classList.add("is-fullscreen");
+                    updateFullscreenUI();
+                });
+            } else if (shooterStage.webkitRequestFullscreen) {
+                shooterStage.webkitRequestFullscreen();
+                updateFullscreenUI();
+            } else {
+                shooterStage.classList.add("is-fullscreen");
+                updateFullscreenUI();
+            }
         }
     }
 
@@ -176,6 +239,7 @@ if (!canvas) {
             gameState.rafId = null;
         }
 
+        resizeCanvas();
         gameState.player = new Player();
         gameState.bullets = [];
         gameState.enemies = [];
@@ -356,7 +420,18 @@ if (!canvas) {
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
 
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener("click", toggleFullscreen);
+        }
+
+        document.addEventListener("fullscreenchange", updateFullscreenUI);
+        document.addEventListener("webkitfullscreenchange", updateFullscreenUI);
+
         window.addEventListener("keydown", (e) => {
+            if (e.code === "Escape" && shooterStage && shooterStage.classList.contains("is-fullscreen")) {
+                shooterStage.classList.remove("is-fullscreen");
+                updateFullscreenUI();
+            }
             gameState.keys[e.key] = true;
             if ([" ", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
         });

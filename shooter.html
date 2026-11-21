@@ -30,35 +30,38 @@
         </section>
 
         <section id="shooter-game" class="card mt-22">
-            <div class="shooter-container">
-                <canvas id="gameCanvas"></canvas>
+            <div class="shooter-stage" id="shooterStage">
+                <div class="shooter-container">
+                    <button id="fullscreenBtn" class="fullscreen-btn" title="Pełny ekran" aria-label="Pełny ekran">⛶</button>
+                    <canvas id="gameCanvas"></canvas>
 
-                <div id="score">Wynik: 0</div>
-                
-                <!-- Pionowy pasek temperatury po lewej stronie -->
-                <div id="heatBar"><div id="heatFillBar"></div></div>
-                
-                <!-- Pionowy pasek zdrowia po prawej stronie -->
-                <div id="healthBar"><div id="healthFill"></div></div>
+                    <div id="score">Wynik: 0</div>
+                    
+                    <!-- Pionowy pasek temperatury po lewej stronie -->
+                    <div id="heatBar"><div id="heatFillBar"></div></div>
+                    
+                    <!-- Pionowy pasek zdrowia po prawej stronie -->
+                    <div id="healthBar"><div id="healthFill"></div></div>
 
-                <div class="overlay" id="menu">
-                    <button id="startBtn" class="btn">Start</button>
+                    <div class="overlay" id="menu">
+                        <button id="startBtn" class="btn">Start</button>
+                    </div>
+
+                    <div id="gameOverMenu" class="hidden">
+                        <h2>Game Over</h2>
+                        <p>Wynik: <span id="finalScore">0</span></p>
+                        <button id="restartBtn" class="btn">Zagraj ponownie</button>
+                    </div>
                 </div>
-
-                <div id="gameOverMenu" class="hidden">
-                    <h2>Game Over</h2>
-                    <p>Wynik: <span id="finalScore">0</span></p>
-                    <button id="restartBtn" class="btn">Zagraj ponownie</button>
-                </div>
-            </div>
-          
-            <div class="mobile-controls">
-                <button id="mobileShootBtn" class="mobile-btn-shoot">STRZAŁ</button>
               
-                <div id="touchSliderArea">
-                    <div id="slider-label">STEROWANIE</div>
-                    <div id="slider-track">
-                        <div id="sliderHandle">↔</div>
+                <div class="mobile-controls">
+                    <button id="mobileShootBtn" class="mobile-btn-shoot">STRZAŁ</button>
+                  
+                    <div id="touchSliderArea">
+                        <div id="slider-label">STEROWANIE</div>
+                        <div id="slider-track">
+                            <div id="sliderHandle">↔</div>
+                        </div>
                     </div>
                 </div>
             </div>

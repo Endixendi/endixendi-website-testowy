@@ -8,13 +8,22 @@
     --warning: #ff9f1c;
 }
 
+.shooter-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 .shooter-container {
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0 auto;
+    width: 100%;
     max-width: 800px;
+    aspect-ratio: 4 / 3;
     background: #000;
     border-radius: 12px;
     overflow: hidden;
@@ -29,9 +38,40 @@
 #gameCanvas {
     display: block;
     width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
+    height: 100%;
     cursor: crosshair;
+}
+
+/* Przycisk Fullscreen */
+.fullscreen-btn {
+    position: absolute;
+    top: 14px;
+    right: 42px;
+    z-index: 25;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: rgba(15, 17, 21, 0.75);
+    color: #ffffff;
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.fullscreen-btn:hover {
+    background: var(--accent);
+    color: #000000;
+    transform: scale(1.05);
+}
+
+.fullscreen-btn:active {
+    transform: scale(0.95);
 }
 
 /* ==========================================================================
@@ -98,7 +138,6 @@
    MENUS (START / GAME OVER)
    ========================================================================== */
 
-/* Wspólne pozycjonowanie dla obu okien */
 #menu, 
 #gameOverMenu {
     position: absolute;
@@ -112,7 +151,10 @@
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
 }
 
-/* Dedykowane, odchudzone style tylko dla menu START */
+#gameOverMenu.hidden {
+    display: none;
+}
+
 #menu {
     padding: 20px;
     border-radius: 12px;
@@ -122,7 +164,6 @@
     align-items: center;
 }
 
-/* Dedykowane style dla menu GAME OVER (zostaje duże, bo ma tekst) */
 #gameOverMenu {
     padding: 30px;
     border-radius: 16px;
@@ -143,11 +184,68 @@
 }
 
 /* ==========================================================================
+   TRYB PEŁNOEKRANOWY (Natywny Fullscreen API + Fallback dla iOS)
+   ========================================================================== */
+
+.shooter-stage.is-fullscreen,
+.shooter-stage:fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    background: #0a0c10 !important;
+    z-index: 99999 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    overflow-y: auto !important;
+}
+
+/* Na PC / ekranach poziomych plansza zachowuje proporcje 4:3 i mieści się w wysokości ekranu */
+@media (orientation: landscape) and (min-width: 769px) {
+    .shooter-stage.is-fullscreen .shooter-container,
+    .shooter-stage:fullscreen .shooter-container {
+        width: min(88vw, calc((100dvh - 36px) * (4 / 3))) !important;
+        max-width: none !important;
+        aspect-ratio: 4 / 3 !important;
+        flex: 0 0 auto !important;
+    }
+}
+
+/* Na telefonach / ekranach pionowych w trybie pełnoekranowym */
+@media (max-width: 768px), (orientation: portrait) {
+    .shooter-stage.is-fullscreen .shooter-container,
+    .shooter-stage:fullscreen .shooter-container {
+        width: min(94vw, calc((100dvh - 155px) * (4 / 3))) !important;
+        max-width: 100% !important;
+        aspect-ratio: 4 / 3 !important;
+        flex: 0 0 auto !important;
+    }
+
+    .shooter-stage.is-fullscreen .mobile-controls,
+    .shooter-stage:fullscreen .mobile-controls {
+        display: flex !important;
+        width: 100% !important;
+        max-width: 650px !important;
+        margin-top: 0 !important;
+        padding: 8px 12px !important;
+        flex: 0 0 auto !important;
+    }
+}
+
+/* ==========================================================================
    STEROWANIE MOBILNE (DLA EKRANÓW DOTYKOWYCH)
    ========================================================================== */
 
 .mobile-controls {
     display: none;
+    width: 100%;
+    max-width: 800px;
     padding: 15px;
     gap: 15px;
     align-items: center;
@@ -155,6 +253,8 @@
     border-radius: 15px;
     margin-top: 15px;
     user-select: none;
+    -webkit-user-select: none;
+    box-sizing: border-box;
 }
 
 #touchSliderArea {
@@ -227,6 +327,7 @@
     transition: all 0.05s;
     user-select: none;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 .mobile-btn-shoot:active {
@@ -240,6 +341,15 @@
 
 body.theme-red .shooter-container:hover {
     border-color: #ff0000;
+}
+
+body.theme-red .fullscreen-btn {
+    border-color: #ff0000;
+}
+
+body.theme-red .fullscreen-btn:hover {
+    background: #ff0000;
+    color: #ffffff;
 }
 
 body.theme-red #sliderHandle {
@@ -261,11 +371,13 @@ body.theme-red .mobile-btn-shoot:active {
    RESPONSYWNOŚĆ (MEDIA QUERIES)
    ========================================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (pointer: coarse) {
     .mobile-controls {
         display: flex;
     }
-    
+}
+
+@media (max-width: 768px) {
     .controls-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -279,7 +391,6 @@ body.theme-red .mobile-btn-shoot:active {
 }
 
 @media (max-width: 480px) {
-    /* Dopasowanie wielkości przycisku na bardzo wąskich ekranach */
     .mobile-btn-shoot {
         flex: 0 0 85px;
         height: 85px;
