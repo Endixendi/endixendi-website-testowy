@@ -17,7 +17,9 @@ Strona wykorzystuje czysty JavaScript do dynamicznego wstrzykiwania powtarzalnyc
 * **Dino Game (`dino.html`)** – Klasyczna zręcznościowa gra inspirowana kultowym projektem z Chrome. Skacz kwadratowym dinozaurem przez przeszkody, kontroluj głośność audio i bij rekordy (również na telefonie z dedykowanym sterowaniem dotykowym).
 * **Tetris (`tetris.html`)** – Przeglądarkowa wersja retro klasyka z systemem Hold/Next, punktacją, poziomami trudności oraz pełnym sterowaniem mobilnym i klawiaturowym.
 * **Shooter Game (`shooter.html`)** – Dynamiczna strzelanka kosmiczna. Broń się przed wrogimi statkami, uważaj na pasek zdrowia oraz temperaturę dział (system przegrzewania broni!).
-* **Statki — Bitwa Morska (`statki.html`)** – Strategiczna gra planszowa w neonowym wydaniu. Zmierz się z komputerem na trzech poziomach trudności: *Łatwy*, *Trudny* oraz... *Cheater*.
+* **Statki — Bitwa Morska (`battleship.html`)** – Strategiczna gra planszowa w neonowym wydaniu. Zmierz się z komputerem na trzech poziomach trudności: *Łatwy*, *Trudny* oraz... *Cheater*.
+
+> **Wspólne moduły gier:** przycisk pełnego ekranu i jego style są współdzielone przez `assets/css/games.css`, a obsługa trybu pełnoekranowego (Fullscreen API + fallback dla iOS) przez `assets/js/fullscreen.js`. Oba pliki ładują strony Dino, Tetris i Shooter (Statki używają tylko `fullscreen.js`).
 
 ### 📱 Informacje i Multimedia
 * **Strona Główna (`index.html`)** – Centrum dowodzenia. Zawiera sekcję "O mnie", pełną specyfikację mojego PC oraz urządzeń peryferyjnych, odnośniki do social media, widgety Instagrama i Spotify oraz najnowsze filmy z YouTube.
@@ -31,8 +33,8 @@ Strona wykorzystuje czysty JavaScript do dynamicznego wstrzykiwania powtarzalnyc
 Projekt stawia na szybkość działania, lekkość i brak ciężkich frameworków (Vanilla Tech Stack):
 
 * **HTML5** – Semantyczna struktura dokumentów dostosowana do standardów dostępności (Aria-labels).
-* **CSS3** – Nowoczesny, responsywny design (**Mobile First**) oparty na autorskim systemie klas narzędziowych (Utility-first CSS) wspierany efektami neonowymi i sezonowymi.
-* **JavaScript (ES6+)** – Logika gier oparta na obiektach `<canvas>` asynchroniczne modularne ładowanie komponentów HTML oraz obsługa API audio dla efektów dźwiękowych i muzyki w tle.
+* **CSS3** – Nowoczesny, responsywny design (**Mobile First**) oparty na autorskim systemie klas narzędziowych (Utility-first CSS) wspierany efektami neonowymi i sezonowymi. Kolory całej strony sterowane są zmiennymi CSS (`--accent`, `--accent-2`, `--danger`), dzięki czemu motywy (czerwony, zielony, sezonowe) działają również w grach i galerii bez osobnych nadpisań.
+* **JavaScript (ES6+)** – Logika gier oparta na obiektach `<canvas>` asynchroniczne modularne ładowanie komponentów HTML (menu, stopka), wspólny moduł pełnego ekranu oraz obsługa API audio dla efektów dźwiękowych i muzyki w tle.
 
 ---
 
@@ -44,17 +46,18 @@ Projekt stawia na szybkość działania, lekkość i brak ciężkich frameworkó
 │   │   ├── battleship.css    # Style dedykowane grze Statki
 │   │   ├── dino.css          # Style dedykowane grze Dino
 │   │   ├── gallery.css       # Style dedykowane galerii zdjęć
+│   │   ├── games.css         # Wspólne style gier (przycisk pełnego ekranu)
 │   │   ├── linux.css         # Style dedykowane stronie linux
-│   │   ├── pc-mode.css         # Style dedykowane stronie pc-mode
+│   │   ├── pc-mode.css       # Style dedykowane stronie pc-mode
 │   │   ├── shooter.css       # Style dedykowane grze Shooter
-│   │   ├── style.css         # Główny arkusz stylów strony
-│   │   └── tetris.css        # Style dedykowane grze Tetris
+│   │   ├── style.css         # Główny arkusz stylów strony (zmienne, motywy, menu, stopka)
+│   │   ├── tetris.css        # Style dedykowane grze Tetris
 │   │   └── tools.css         # Style dedykowane stronie tools-all
 │   ├── images/               # Zasoby graficzne, ikony, kod QR
 │   │   ├── gallery/          # Zdjęcia wyświetlane w galerii
-│	│	│	└── ...
-│   │   ├── game/          	  # Zdjęcia ikon gier w pc-mode
-│	│	│	└── ...
+│   │   │   └── ...
+│   │   ├── game/             # Zdjęcia ikon gier w pc-mode
+│   │   │   └── ...
 │   │   ├── logo.png          # Zdjęcie mojego awatara
 │   │   ├── logo-dc.png       # Logo serwera Discord
 │   │   ├── logo-kolo.png     # Zdjęcie mojego awatara wersja koło
@@ -62,9 +65,10 @@ Projekt stawia na szybkość działania, lekkość i brak ciężkich frameworkó
 │   ├── js/
 │   │   ├── battleship.js     # Logika gry i AI bota w Statki
 │   │   ├── dino.js           # Silnik gry Dino
+│   │   ├── fullscreen.js     # Wspólna obsługa trybu pełnoekranowego w grach
 │   │   ├── gallery.js        # Dynamiczne ładowanie siatki zdjęć
-│   │   ├── pc-mode.js        # Sylnik gry pc-mode
-│   │   ├── script.js         # Wspólna logika (efekty sezonowe, ładowanie menu)
+│   │   ├── pc-mode.js        # Silnik symulatora pc-mode
+│   │   ├── script.js         # Wspólna logika (motywy, efekty sezonowe, ładowanie menu, nawigacja)
 │   │   ├── shooter.js        # Silnik gry Shooter
 │   │   ├── tetris.js         # Silnik gry Tetris
 │   │   └── tools.js          # Logika wyszukiwarki w Przydatne Strony i Narzędzia
@@ -84,15 +88,15 @@ Projekt stawia na szybkość działania, lekkość i brak ciężkich frameworkó
 │       │   ├── rotate.mp3
 │       │   └── success.mp3
 │       ├── shooter/
-│       │   └── shooter-bg.mp3 								# Muzyka tła dla gry Shooter
+│       │   └── shooter-bg.mp3                              # Muzyka tła dla gry Shooter
 │       ├── statki/
-│       │   └── battle-bg.mp3  								# Muzyka tła dla gry Statki
+│       │   └── battle-bg.mp3                               # Muzyka tła dla gry Statki
 │       ├── system/
-│       │   ├── bartosz.mp3									# Zapętlona muzyka tła sterowana mikserem w pc-mode
-│       │   ├── microsoft-windows-xp-shutdown-sound.mp3		# Dźwięk sekwencji zamykania systemu pc-mode
-│       │   └── windows-xp-startup.mp3  					# Dźwięk powitalny przy starcie systemu pc-mode
+│       │   ├── bartosz.mp3                                 # Muzyka tła sterowana mikserem w pc-mode
+│       │   ├── microsoft-windows-xp-shutdown-sound.mp3     # Dźwięk zamykania systemu pc-mode
+│       │   └── windows-xp-startup.mp3                      # Dźwięk powitalny przy starcie pc-mode
 │       └── tetris/
-│           └── tetris-bg.mp3  								# Muzyka tła dla gry Tetris
+│           └── tetris-bg.mp3                               # Muzyka tła dla gry Tetris
 │
 ├── battleship.html           # Gra Statki
 ├── CNAME                     # Konfiguracja własnej domeny dla GitHub Pages
@@ -104,9 +108,9 @@ Projekt stawia na szybkość działania, lekkość i brak ciężkich frameworkó
 ├── media.html                # Podstrona z mediami: widżet profilu Instagram oraz playlista Spotify 
 ├── menu.html                 # Wspólne menu stron (ładowane dynamicznie)
 ├── pc-mode.html              # Symulator systemu operacyjnego
-├── polityka.html     		  # Polityka Prywatności
+├── polityka.html             # Polityka Prywatności
 ├── README.md                 # Dokumentacja projektu
-├── regulamin.html    		  # Regulamin Serwisu
+├── regulamin.html            # Regulamin Serwisu
 ├── shooter.html              # Gra Shooter
 ├── tetris.html               # Gra Tetris
 ├── tools-all.html            # Spis narzędzi online
