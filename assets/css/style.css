@@ -739,15 +739,22 @@ li {
     font-weight: bold;
 }
 
+.controls-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .controls-left ul {
-    margin: 0;
-    padding-left: 18px;
+    margin: 12px 0 0 0;
+    padding-left: 24px;
     list-style: none;
 }
 
 .controls-left li {
-    margin: 8px 0;
+    margin: 10px 0;
     font-size: 16px;
+    line-height: 1.5;
     position: relative;
     padding-left: 8px;
 }
@@ -755,8 +762,10 @@ li {
 .controls-left li:before {
     content: "•";
     position: absolute;
-    left: -12px;
+    left: -18px;
+    top: 0;
     color: var(--accent);
+    font-weight: bold;
 }
 
 .side.left ul {
