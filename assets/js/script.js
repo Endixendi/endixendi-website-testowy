@@ -619,7 +619,7 @@ function initSitePanels() {
 
       if (activeMobile) activeMobile.classList.add("is-active");
 
-      mobilePanel.style.setProperty("display", "block", "important");
+      mobilePanel.classList.add("is-open");
     }, 50);
   }
 }

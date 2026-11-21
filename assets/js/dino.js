@@ -6,6 +6,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Elementy UI
+const dinoContainer = document.getElementById('dinoContainer');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
 const scoreEl = document.getElementById('score');
 const highScoreEl = document.getElementById('highScore');
 const menu = document.getElementById('menu');
@@ -18,12 +20,6 @@ const volumeControl = document.getElementById('volume-music');
 const volumeControl1 = document.getElementById('volume-effects');
 const jumpBtn = document.getElementById('jumpBtn');
 const crouchBtn = document.getElementById('crouchBtn');
-
-// Ukrywamy kontrolki mobilne na komputerach na start
-if (window.innerWidth > 768) {
-    if (jumpBtn) jumpBtn.style.display = "none";
-    if (crouchBtn) crouchBtn.style.display = "none";
-}
 
 // Dźwięki
 const bgMusic = new Audio("assets/sounds/dino/dino-bg.mp3");
@@ -56,7 +52,7 @@ let highScore = parseInt(localStorage.getItem("highScore")) || 0;
 highScoreEl.textContent = highScore;
 
 // System tarczy (ładowanej kryształami)
-let shieldEnergy = 0; // Wartość od 0 do 100%
+let shieldEnergy = 0;
 
 // Monitorowanie wciśniętych klawiszy
 const keys = {
@@ -72,17 +68,89 @@ const V_WIDTH = 800;
 const V_HEIGHT = 350;
 let scale = 1;
 
+function isFullscreenActive() {
+    return Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        (dinoContainer && dinoContainer.classList.contains('is-fullscreen'))
+    );
+}
+
 function resizeCanvas() {
     const container = canvas.parentElement;
     if (!container) return;
 
-    let targetWidth = container.clientWidth;
-    if (targetWidth > 800) targetWidth = 800;
+    if (isFullscreenActive()) {
+        const availW = container.clientWidth;
+        const availH = container.clientHeight;
+        const aspect = V_WIDTH / V_HEIGHT;
 
-    scale = targetWidth / V_WIDTH;
+        let targetWidth = availW;
+        let targetHeight = targetWidth / aspect;
 
-    canvas.width = targetWidth;
-    canvas.height = V_HEIGHT * scale;
+        if (targetHeight > availH) {
+            targetHeight = availH;
+            targetWidth = targetHeight * aspect;
+        }
+
+        scale = targetWidth / V_WIDTH;
+        canvas.width = Math.floor(targetWidth);
+        canvas.height = Math.floor(targetHeight);
+    } else {
+        let targetWidth = container.clientWidth;
+        if (targetWidth > 800) targetWidth = 800;
+
+        scale = targetWidth / V_WIDTH;
+        canvas.width = targetWidth;
+        canvas.height = V_HEIGHT * scale;
+    }
+}
+
+function updateFullscreenState() {
+    const active = isFullscreenActive();
+    if (fullscreenBtn) {
+        fullscreenBtn.textContent = active ? '✕' : '⛶';
+        fullscreenBtn.title = active ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran';
+    }
+    document.body.style.overflow = active ? 'hidden' : '';
+
+    setTimeout(() => {
+        resizeCanvas();
+        if (!player || gameOver) {
+            ctx.fillStyle = '#0f1115';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    }, 50);
+}
+
+function toggleFullscreen() {
+    if (!dinoContainer) return;
+
+    if (isFullscreenActive()) {
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitFullscreenElement) {
+            document.webkitExitFullscreen();
+        }
+        dinoContainer.classList.remove('is-fullscreen');
+        updateFullscreenState();
+    } else {
+        if (dinoContainer.requestFullscreen) {
+            dinoContainer.requestFullscreen().then(() => {
+                updateFullscreenState();
+            }).catch(() => {
+                dinoContainer.classList.add('is-fullscreen');
+                updateFullscreenState();
+            });
+        } else if (dinoContainer.webkitRequestFullscreen) {
+            dinoContainer.webkitRequestFullscreen();
+            updateFullscreenState();
+        } else {
+            // Fallback dla urządzeń bez wsparcia Fullscreen API (np. iPhone iOS Safari)
+            dinoContainer.classList.add('is-fullscreen');
+            updateFullscreenState();
+        }
+    }
 }
 
 function getAccentColor(fallback) {
@@ -444,11 +512,6 @@ function initGame() {
 
     bgMusic.currentTime = 0;
     bgMusic.play().catch(() => {});
-
-    if (window.innerWidth <= 768) {
-        if (jumpBtn) jumpBtn.style.display = "block";
-        if (crouchBtn) crouchBtn.style.display = "block";
-    }
 }
 
 function checkCollision(rect1, rect2) {
@@ -599,9 +662,6 @@ function endGame() {
     finalScoreEl.textContent = score;
     finalHighScoreEl.textContent = highScore;
     gameOverMenu.classList.remove("hidden");
-
-    if (jumpBtn) jumpBtn.style.display = "none";
-    if (crouchBtn) crouchBtn.style.display = "none";
 }
 
 window.addEventListener("load", () => {
@@ -613,6 +673,13 @@ window.addEventListener("load", () => {
         }
     });
     resizeCanvas();
+
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenState);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenState);
 
     if (volumeControl) {
         volumeControl.addEventListener("input", () => {
@@ -630,6 +697,10 @@ window.addEventListener("load", () => {
     }
 
     window.addEventListener("keydown", e => {
+        if (e.code === "Escape" && dinoContainer && dinoContainer.classList.contains('is-fullscreen')) {
+            dinoContainer.classList.remove('is-fullscreen');
+            updateFullscreenState();
+        }
         if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
             e.preventDefault();
             keys[e.code] = true;
@@ -649,27 +720,29 @@ window.addEventListener("load", () => {
     });
 
     if (jumpBtn) {
-        jumpBtn.addEventListener("touchstart", (e) => {
+        const handleJump = (e) => {
             e.preventDefault();
             if (!gameOver && player) player.jump();
-        }, { passive: false });
+        };
+        jumpBtn.addEventListener("touchstart", handleJump, { passive: false });
+        jumpBtn.addEventListener("mousedown", handleJump);
     }
 
     if (crouchBtn) {
-        crouchBtn.addEventListener("touchstart", (e) => {
+        const startCrouch = (e) => {
             e.preventDefault();
             keys.ArrowDown = true;
-        }, { passive: false });
-
-        crouchBtn.addEventListener("touchend", (e) => {
+        };
+        const endCrouch = (e) => {
             e.preventDefault();
             keys.ArrowDown = false;
-        }, { passive: false });
-
-        crouchBtn.addEventListener("touchcancel", (e) => {
-            e.preventDefault();
-            keys.ArrowDown = false;
-        }, { passive: false });
+        };
+        crouchBtn.addEventListener("touchstart", startCrouch, { passive: false });
+        crouchBtn.addEventListener("touchend", endCrouch, { passive: false });
+        crouchBtn.addEventListener("touchcancel", endCrouch, { passive: false });
+        crouchBtn.addEventListener("mousedown", startCrouch);
+        crouchBtn.addEventListener("mouseup", endCrouch);
+        crouchBtn.addEventListener("mouseleave", endCrouch);
     }
 
     if (startBtn) {

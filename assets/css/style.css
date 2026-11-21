@@ -955,11 +955,11 @@ li {
    ========================================================================== */
 
 .seasonal-particle {
-    position: fixed;
-    top: -30px;
-    pointer-events: none;
-    z-index: 9999;
-    animation: fall linear forwards;
+	position: fixed;
+	top: -30px;
+	pointer-events: none;
+	z-index: 400;
+	animation: fall linear forwards;
 }
 
 @keyframes fall {
@@ -1274,19 +1274,23 @@ section {
 }
 
 .mobile-navigation-bar {
-    display: none !important;
-    position: fixed;
-    bottom: 20px;
-    left: 5%;
-    width: 90%;
-    height: 76px;
-    background: rgba(20, 24, 33, 0.95);
-    border: 2px dashed var(--accent);
-    border-radius: 8px;
-    z-index: 9999;
-    overflow: hidden;
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
-    animation: triggerMobileSlide 0.4s ease-out forwards;
+	display: none;
+	position: fixed;
+	bottom: 20px;
+	left: 5%;
+	width: 90%;
+	height: 76px;
+	background: rgba(20, 24, 33, 0.95);
+	border: 2px dashed var(--accent);
+	border-radius: 8px;
+	z-index: 9999;
+	overflow: hidden;
+	box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
+	animation: triggerMobileSlide 0.4s ease-out forwards;
+}
+
+.mobile-navigation-bar.is-open {
+    display: block;
 }
 
 @keyframes triggerMobileSlide {
