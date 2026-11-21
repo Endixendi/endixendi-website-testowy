@@ -79,8 +79,9 @@ function isFullscreenActive() {
 function updateFullscreenUI() {
     const active = isFullscreenActive();
     if (btnFullscreen) {
-        btnFullscreen.textContent = active ? '✕ Wyjdź z pełnego ekranu' : '⛶ Pełny ekran';
+        btnFullscreen.textContent = active ? '✕' : '⛶';
         btnFullscreen.title = active ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran';
+        btnFullscreen.setAttribute('aria-label', active ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran');
     }
     document.body.style.overflow = active ? 'hidden' : '';
 }
