@@ -30,9 +30,9 @@
         </section>
 
         <section id="tetris-game" class="card mt-22">
-            <div class="tetris-container">
+            <div class="tetris-container" id="tetrisContainer">
                 
-                <div class="side-panel">
+                <div class="side-panel left-panel">
                     <div class="stat-box">
                         <div class="label">Wynik</div>
                         <div id="score" class="value">0</div>
@@ -48,6 +48,7 @@
                 </div>
 
                 <div class="tetris-wrapper">
+                    <button id="tetrisFullscreenBtn" class="fullscreen-btn" title="Pełny ekran" aria-label="Pełny ekran">⛶</button>
                     <canvas id="tetrisCanvas"></canvas>
                     
                     <div id="tetris-menu" class="modal">
@@ -69,7 +70,7 @@
 					</div>
 				</div>
 
-                <div class="side-panel">
+                <div class="side-panel right-panel">
                     <div class="preview-box">
                         <div class="label">Następny</div>
                         <canvas id="nextCanvas" width="100" height="100"></canvas>

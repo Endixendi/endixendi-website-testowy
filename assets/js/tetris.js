@@ -11,6 +11,8 @@ const nctx = ncv ? ncv.getContext('2d') : null;
 const hctx = hcv ? hcv.getContext('2d') : null;
 
 // Elementy UI
+const tetrisContainer = document.getElementById('tetrisContainer');
+const fullscreenBtn = document.getElementById('tetrisFullscreenBtn');
 const scoreEl = document.getElementById('score');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
@@ -81,6 +83,56 @@ const player = {
     matrix: null,
     type: null
 };
+
+// --- PEŁNY EKRAN ---
+
+function isFullscreenActive() {
+    return Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        (tetrisContainer && tetrisContainer.classList.contains('is-fullscreen'))
+    );
+}
+
+function updateFullscreenUI() {
+    const active = isFullscreenActive();
+    if (fullscreenBtn) {
+        fullscreenBtn.textContent = active ? '✕' : '⛶';
+        fullscreenBtn.title = active ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran';
+        fullscreenBtn.setAttribute('aria-label', active ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran');
+    }
+    document.body.style.overflow = active ? 'hidden' : '';
+    draw();
+}
+
+function toggleFullscreen() {
+    if (!tetrisContainer) return;
+
+    if (isFullscreenActive()) {
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitFullscreenElement) {
+            document.webkitExitFullscreen();
+        }
+        tetrisContainer.classList.remove('is-fullscreen');
+        updateFullscreenUI();
+    } else {
+        if (tetrisContainer.requestFullscreen) {
+            tetrisContainer.requestFullscreen().then(() => {
+                updateFullscreenUI();
+            }).catch(() => {
+                tetrisContainer.classList.add('is-fullscreen');
+                updateFullscreenUI();
+            });
+        } else if (tetrisContainer.webkitRequestFullscreen) {
+            tetrisContainer.webkitRequestFullscreen();
+            updateFullscreenUI();
+        } else {
+            tetrisContainer.classList.add('is-fullscreen');
+            updateFullscreenUI();
+        }
+    }
+}
 
 // --- RYSOWANIE ---
 
@@ -413,7 +465,23 @@ function togglePause() {
     }
 }
 
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+}
+
+document.addEventListener('fullscreenchange', updateFullscreenUI);
+document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+
+window.addEventListener('resize', () => {
+    draw();
+});
+
 window.addEventListener('keydown', e => {
+    if (e.code === 'Escape' && tetrisContainer && tetrisContainer.classList.contains('is-fullscreen')) {
+        tetrisContainer.classList.remove('is-fullscreen');
+        updateFullscreenUI();
+    }
+
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
         e.preventDefault();
     }
