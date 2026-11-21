@@ -9,6 +9,20 @@
     --neon-red: #ff4d6d;
 }
 
+/* Menu mobilne zawsze nad zwykłą planszą gry */
+#menu-placeholder,
+header,
+#main-nav,
+.dropdown-content {
+    position: relative;
+    z-index: 9000;
+}
+
+.dropdown-content {
+    position: absolute;
+    z-index: 9001;
+}
+
 .tetris-container {
     display: flex;
     justify-content: center;
@@ -17,6 +31,8 @@
     margin: 0 auto;
     width: fit-content;
     max-width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 /* Boczne panele na statystyki i podglądy klocków */
@@ -64,6 +80,7 @@
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
     transition: border-color var(--transition);
+    z-index: 1;
 }
 
 #tetrisCanvas {
@@ -78,7 +95,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    z-index: 105;
+    z-index: 25;
     width: 34px;
     height: 34px;
     border-radius: 8px;
@@ -118,7 +135,7 @@
     border-radius: 12px;
     text-align: center;
     border: 2px solid var(--accent);
-    z-index: 99;
+    z-index: 20;
     min-width: 200px;
     box-shadow: 0 0 15px rgba(0, 170, 255, 0.2);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;

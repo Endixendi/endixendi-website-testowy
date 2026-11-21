@@ -1195,7 +1195,7 @@ body.theme-red .floating-back-to-top:hover {
 }
 
 /* ==========================================================================
-   RESPONSYWNOŚĆ I MEDIA QUERIES (Mobilne Menu Hamburgerowe)
+   RESPONSYWNOŚĆ I MEDIA QUERIES
    ========================================================================== */
 
 section { 
@@ -1209,10 +1209,6 @@ section {
 @media screen and (min-width: 1201px) {
     .pc-only { display: block !important; }
     .mobile-only { display: none !important; }
-}
-@media screen and (max-width: 1200px) {
-    .pc-only { display: none !important; }
-    .mobile-only { display: block !important; }
 }
 
 .site-shortcut-panel {
@@ -1299,10 +1295,29 @@ section {
 }
 
 /* ==========================================================================
-   WERSJA MOBILNA
+   WERSJA MOBILNA I TABLETY (max-width: 1200px)
    ========================================================================== */
 
 @media screen and (max-width: 1200px) {
+    .pc-only { display: none !important; }
+    .mobile-only { display: block !important; }
+
+    #menu-placeholder {
+        position: relative;
+        z-index: 9500;
+    }
+
+    #menu-placeholder > header,
+    header {
+        position: relative;
+        z-index: 9500;
+    }
+
+    main {
+        position: relative;
+        z-index: 1;
+    }
+
     .menu-icon { 
         display: block; 
         color: var(--accent);
@@ -1323,7 +1338,7 @@ section {
         padding: 20px;
         box-sizing: border-box;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        z-index: 499;
+        z-index: 9600;
         text-align: center;
         max-height: calc(100vh - 72px);
         overflow-y: auto;
@@ -1435,18 +1450,6 @@ section {
         position: sticky;
         top: 0;
         z-index: 9999;
-    }
-
-    #menu-placeholder > header {
-        position: static;
-    }
-}
-
-/* TELEFONY I TABLETY - MENU PRZEWIJA SIĘ NORMALNIE */
-
-@media screen and (max-width: 1200px) {
-    #menu-placeholder {
-        position: static;
     }
 
     #menu-placeholder > header {
