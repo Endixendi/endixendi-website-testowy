@@ -234,43 +234,52 @@
         flex-direction: row !important;
         justify-content: center !important;
         align-items: center !important;
-        gap: 10px !important;
-        padding: 8px 12px !important;
+        gap: 8px !important;
+        padding: 6px 8px !important;
     }
 
     .tetris-container.is-fullscreen #tetrisCanvas,
     .tetris-container:fullscreen #tetrisCanvas {
-        height: calc(100dvh - 20px) !important;
-        width: calc((100dvh - 20px) * 0.5) !important;
-        max-width: 45vw !important;
+        height: calc(100dvh - 14px) !important;
+        width: calc((100dvh - 14px) * 0.5) !important;
+        max-width: 38vw !important;
     }
 
     .tetris-container.is-fullscreen .side-panel,
     .tetris-container:fullscreen .side-panel {
         display: flex !important;
         flex-direction: column !important;
-        width: 96px !important;
-        gap: 6px !important;
+        width: 82px !important;
+        gap: 5px !important;
         margin: 0 !important;
+        flex-shrink: 0 !important;
     }
 
     .tetris-container.is-fullscreen .stat-box,
     .tetris-container:fullscreen .stat-box,
     .tetris-container.is-fullscreen .preview-box,
     .tetris-container:fullscreen .preview-box {
-        padding: 6px !important;
+        padding: 4px !important;
         margin: 0 !important;
+    }
+
+    .tetris-container.is-fullscreen .stat-box .label,
+    .tetris-container:fullscreen .stat-box .label,
+    .tetris-container.is-fullscreen .preview-box .label,
+    .tetris-container:fullscreen .preview-box .label {
+        font-size: 8px !important;
+        margin-bottom: 2px !important;
     }
 
     .tetris-container.is-fullscreen .stat-box .value,
     .tetris-container:fullscreen .stat-box .value {
-        font-size: 16px !important;
+        font-size: 13px !important;
     }
 
     .tetris-container.is-fullscreen .preview-box canvas,
     .tetris-container:fullscreen .preview-box canvas {
-        width: 64px !important;
-        height: 64px !important;
+        width: 48px !important;
+        height: 48px !important;
     }
 
     .tetris-container.is-fullscreen .tetris-mobile-controls,
@@ -278,16 +287,22 @@
         display: flex !important;
         flex-direction: column !important;
         width: auto !important;
-        max-width: 190px !important;
+        max-width: 156px !important;
         margin: 0 !important;
-        gap: 6px !important;
+        gap: 5px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .tetris-container.is-fullscreen .control-row,
+    .tetris-container:fullscreen .control-row {
+        gap: 5px !important;
     }
 
     .tetris-container.is-fullscreen .arrow-btn,
     .tetris-container:fullscreen .arrow-btn {
-        height: 44px !important;
-        min-width: 52px !important;
-        font-size: 18px !important;
+        height: 40px !important;
+        min-width: 44px !important;
+        font-size: 16px !important;
     }
 }
 
@@ -298,8 +313,8 @@
         flex-direction: column !important;
         justify-content: space-between !important;
         align-items: center !important;
-        gap: 6px !important;
-        padding: 8px !important;
+        gap: 4px !important;
+        padding: 6px !important;
     }
 
     .tetris-container.is-fullscreen .side-panel.left-panel,
@@ -314,48 +329,74 @@
 
     .tetris-container.is-fullscreen .side-panel.right-panel,
     .tetris-container:fullscreen .side-panel.right-panel {
-        display: none !important;
-    }
-
-    .tetris-container.is-fullscreen .stat-box,
-    .tetris-container:fullscreen .stat-box {
-        flex: 1 !important;
-        padding: 5px 6px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        max-width: 340px !important;
+        gap: 6px !important;
         margin: 0 !important;
+        order: 4;
     }
 
-    .tetris-container.is-fullscreen .stat-box .label,
-    .tetris-container:fullscreen .stat-box .label {
-        font-size: 9px !important;
-        margin-bottom: 2px !important;
-    }
-
-    .tetris-container.is-fullscreen .stat-box .value,
-    .tetris-container:fullscreen .stat-box .value {
-        font-size: 15px !important;
-    }
-
-    .tetris-container.is-fullscreen #tetrisCanvas,
-    .tetris-container:fullscreen #tetrisCanvas {
-        height: calc(100dvh - 210px) !important;
-        width: calc((100dvh - 210px) * 0.5) !important;
-        max-width: 82vw !important;
+    .tetris-container.is-fullscreen .tetris-wrapper,
+    .tetris-container:fullscreen .tetris-wrapper {
+        order: 2;
     }
 
     .tetris-container.is-fullscreen .tetris-mobile-controls,
     .tetris-container:fullscreen .tetris-mobile-controls {
+        order: 3;
         display: flex !important;
         width: 100% !important;
         max-width: 340px !important;
         margin: 0 !important;
-        gap: 6px !important;
+        gap: 5px !important;
+    }
+
+    .tetris-container.is-fullscreen .stat-box,
+    .tetris-container:fullscreen .stat-box,
+    .tetris-container.is-fullscreen .preview-box,
+    .tetris-container:fullscreen .preview-box {
+        flex: 1 !important;
+        padding: 4px 6px !important;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tetris-container.is-fullscreen .stat-box .label,
+    .tetris-container:fullscreen .stat-box .label,
+    .tetris-container.is-fullscreen .preview-box .label,
+    .tetris-container:fullscreen .preview-box .label {
+        font-size: 9px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .tetris-container.is-fullscreen .stat-box .value,
+    .tetris-container:fullscreen .stat-box .value {
+        font-size: 14px !important;
+    }
+
+    .tetris-container.is-fullscreen .preview-box canvas,
+    .tetris-container:fullscreen .preview-box canvas {
+        width: 34px !important;
+        height: 34px !important;
+        margin: 0 !important;
+    }
+
+    .tetris-container.is-fullscreen #tetrisCanvas,
+    .tetris-container:fullscreen #tetrisCanvas {
+        height: calc(100dvh - 235px) !important;
+        width: calc((100dvh - 235px) * 0.5) !important;
+        max-width: 78vw !important;
     }
 
     .tetris-container.is-fullscreen .arrow-btn,
     .tetris-container:fullscreen .arrow-btn {
-        height: 46px !important;
-        min-width: 54px !important;
-        font-size: 20px !important;
+        height: 42px !important;
+        min-width: 50px !important;
+        font-size: 18px !important;
     }
 }
 
