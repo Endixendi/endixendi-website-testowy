@@ -1313,6 +1313,10 @@ section {
         z-index: 9500;
     }
 
+    .nav {
+        flex-wrap: wrap;
+    }
+
     main {
         position: relative;
         z-index: 1;
@@ -1329,38 +1333,46 @@ section {
     #main-nav {
         display: none;            
         flex-direction: column;   
-        gap: 12px;
+        gap: 8px;
         width: 100%;
-        position: absolute;
-        top: 100%;
-        left: 0;
+        flex-basis: 100%;
+        position: static;
         background: #14171b;
-        padding: 20px;
+        margin-top: 12px;
+        padding: 16px;
+        border-radius: 12px;
         box-sizing: border-box;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         z-index: 9600;
         text-align: center;
-        max-height: calc(100vh - 72px);
-        overflow-y: auto;
     }
 
     #main-nav.show {
         display: flex;
     }
+
+    #main-nav > a,
+    #main-nav .dropbtn {
+        width: 100%;
+        justify-content: center;
+    }
     
     .dropdown {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
     }
 
     .dropdown-content { 
-        position: relative; 
+        position: static; 
         box-shadow: none;
         width: 100%;
-        top: 0;
-        background: rgba(0, 0, 0, 0.2);
-        border: none;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         margin-top: 6px;
+        padding: 4px 0;
         border-radius: 8px;
         opacity: 1;
         visibility: visible;
@@ -1374,12 +1386,12 @@ section {
     }
 
     .dropdown-content a {
-        padding: 12px 16px;
+        padding: 10px 14px;
     }
     
     .dropdown-content a:hover {
-        padding-left: 16px;
-        background: rgba(255, 255, 255, 0.03);
+        padding-left: 14px;
+        background: rgba(255, 255, 255, 0.05);
     }
     
     .hero {
