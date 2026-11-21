@@ -538,10 +538,12 @@ window.toggleEffects = toggleEffects;
 function highlightActiveNav() {
   const currentPath = window.location.pathname.toLowerCase();
   const currentHash = window.location.hash.toLowerCase();
+  const page = currentPath.split("/").pop();
 
+  // Identyfikatory istniejące w menu.html
   const allLinks = [
-    "nav-home", "nav-tworczosc", "nav-pc", "nav-o-mnie",
-    "nav-kontakt", "nav-gallery", "nav-tools", "nav-socials", "nav-games"
+    "nav-home", "nav-o-mnie", "nav-kontakt",
+    "nav-profile", "nav-tools", "nav-games", "nav-socials"
   ];
   allLinks.forEach(id => {
     const link = document.getElementById(id);
@@ -552,33 +554,33 @@ function highlightActiveNav() {
     }
   });
 
-  if (currentPath.includes("dino.html") || currentPath.includes("tetris.html") || currentPath.includes("shooter.html") || currentPath.includes("statki.html")) {
-    setActiveLink("nav-games");
-  } else if (currentPath.includes("tools-rec.html") || currentPath.includes("tools-all.html") || currentPath.includes("linux.html")) {
-    setActiveLink("nav-tools");
-  } else if (currentPath.includes("gallery.html")) {
-    setActiveLink("nav-gallery");
-  } else if (currentHash === "#tworczosc") {
-    setActiveLink("nav-tworczosc");
-  } else if (currentHash === "#pc") {
-    setActiveLink("nav-pc");
-  } else if (currentHash === "#o-mnie") {
-    setActiveLink("nav-o-mnie");
-  } else if (currentHash === "#kontakt") {
-    setActiveLink("nav-kontakt");
-  } else if (currentHash === "#spotify") {
-    setActiveLink("nav-socials");
-  } else if (currentPath === "/" || currentPath.includes("index.html") || currentHash === "#home" || currentHash === "") {
-    setActiveLink("nav-home");
-  }
+  const GAME_PAGES = ["dino.html", "tetris.html", "shooter.html", "battleship.html", "pc-mode.html"];
+  const TOOL_PAGES = ["tools-rec.html", "tools-all.html", "linux.html"];
 
-  function setActiveLink(activeId) {
-    const link = document.getElementById(activeId);
-    if (link) {
-      link.style.color = "var(--accent)";
-      link.style.textShadow = "0 0 10px var(--accent)";
-      link.style.opacity = "1";
-    }
+  let activeId = null;
+
+  if (GAME_PAGES.includes(page)) {
+    activeId = "nav-games";
+  } else if (TOOL_PAGES.includes(page)) {
+    activeId = "nav-tools";
+  } else if (page === "gallery.html") {
+    activeId = "nav-profile";
+  } else if (page === "media.html") {
+    activeId = "nav-socials";
+  } else if (page === "" || page === "index.html") {
+    if (currentHash === "#o-mnie") activeId = "nav-o-mnie";
+    else if (currentHash === "#kontakt") activeId = "nav-kontakt";
+    else if (currentHash === "#pc" || currentHash === "#tworczosc") activeId = "nav-profile";
+    else if (currentHash === "#spotify") activeId = "nav-socials";
+    else activeId = "nav-home";
+  }
+  // polityka.html, regulamin.html itp. - brak podświetlenia
+
+  const active = activeId && document.getElementById(activeId);
+  if (active) {
+    active.style.color = "var(--accent)";
+    active.style.textShadow = "0 0 10px var(--accent)";
+    active.style.opacity = "1";
   }
 }
 

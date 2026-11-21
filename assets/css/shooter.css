@@ -2,11 +2,6 @@
    GŁÓWNE STYLE GRY SHOOTER
    ========================================================================== */
 
-:root {
-    --danger: #ff4d6d;
-    --warning: #ff9f1c;
-}
-
 .shooter-stage {
     display: flex;
     flex-direction: column;
@@ -41,36 +36,10 @@
     cursor: crosshair;
 }
 
-/* Przycisk Fullscreen */
+/* Przycisk Fullscreen (baza w games.css) */
 .fullscreen-btn {
-    position: absolute;
     top: 14px;
     right: 42px;
-    z-index: 25;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    border: 1px solid var(--accent);
-    background: rgba(15, 17, 21, 0.75);
-    color: #ffffff;
-    font-size: 1.1rem;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    backdrop-filter: blur(4px);
-    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
-}
-
-.fullscreen-btn:hover {
-    background: var(--accent);
-    color: #000000;
-    transform: scale(1.05);
-}
-
-.fullscreen-btn:active {
-    transform: scale(0.95);
 }
 
 /* ==========================================================================
@@ -186,75 +155,75 @@
 
 .shooter-stage.is-fullscreen,
 .shooter-stage:fullscreen {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    max-width: none !important;
-    background: #0a0c10 !important;
-    z-index: 99999 !important;
-    padding: 10px !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 8px !important;
-    overflow: hidden !important;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    background: #0a0c10;
+    z-index: 99999;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
 }
 
 /* Telefon / mały ekran po obróceniu w POZIOM w trybie pełnoekranowym */
 @media (max-width: 900px) and (orientation: landscape) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
-        width: auto !important;
-        max-width: 92vw !important;
-        height: calc(100dvh - 82px) !important;
-        max-height: calc(100dvh - 82px) !important;
-        aspect-ratio: 4 / 3 !important;
-        flex: 0 0 auto !important;
+        width: auto;
+        max-width: 92vw;
+        height: calc(100dvh - 82px);
+        max-height: calc(100dvh - 82px);
+        aspect-ratio: 4 / 3;
+        flex: 0 0 auto;
     }
 
     .shooter-stage.is-fullscreen .mobile-controls,
     .shooter-stage:fullscreen .mobile-controls {
-        display: flex !important;
-        width: 100% !important;
-        max-width: 520px !important;
-        padding: 4px 10px !important;
-        gap: 14px !important;
-        margin-top: 0 !important;
-        flex: 0 0 auto !important;
+        display: flex;
+        width: 100%;
+        max-width: 520px;
+        padding: 4px 10px;
+        gap: 14px;
+        margin-top: 0;
+        flex: 0 0 auto;
     }
 
     .shooter-stage.is-fullscreen #touchSliderArea,
     .shooter-stage:fullscreen #touchSliderArea {
-        width: 240px !important;
-        max-width: 240px !important;
-        flex: 0 1 240px !important;
-        height: 50px !important;
-        border-radius: 25px !important;
+        width: 240px;
+        max-width: 240px;
+        flex: 0 1 240px;
+        height: 50px;
+        border-radius: 25px;
     }
 
     .shooter-stage.is-fullscreen #sliderHandle,
     .shooter-stage:fullscreen #sliderHandle {
-        width: 40px !important;
-        height: 40px !important;
-        font-size: 16px !important;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
     }
 
     .shooter-stage.is-fullscreen .mobile-btn-shoot,
     .shooter-stage:fullscreen .mobile-btn-shoot {
-        flex: 0 0 56px !important;
-        width: 56px !important;
-        height: 56px !important;
-        font-size: 12px !important;
+        flex: 0 0 56px;
+        width: 56px;
+        height: 56px;
+        font-size: 12px;
     }
 
     .shooter-stage.is-fullscreen #heatBar,
     .shooter-stage:fullscreen #heatBar,
     .shooter-stage.is-fullscreen #healthBar,
     .shooter-stage:fullscreen #healthBar {
-        height: 80px !important;
+        height: 80px;
     }
 }
 
@@ -262,20 +231,20 @@
 @media (max-width: 768px) and (orientation: portrait) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
-        width: min(94vw, calc((100dvh - 135px) * (4 / 3))) !important;
-        max-width: 100% !important;
-        aspect-ratio: 4 / 3 !important;
-        flex: 0 0 auto !important;
+        width: min(94vw, calc((100dvh - 135px) * (4 / 3)));
+        max-width: 100%;
+        aspect-ratio: 4 / 3;
+        flex: 0 0 auto;
     }
 
     .shooter-stage.is-fullscreen .mobile-controls,
     .shooter-stage:fullscreen .mobile-controls {
-        display: flex !important;
-        width: 100% !important;
-        max-width: 650px !important;
-        margin-top: 0 !important;
-        padding: 6px 10px !important;
-        flex: 0 0 auto !important;
+        display: flex;
+        width: 100%;
+        max-width: 650px;
+        margin-top: 0;
+        padding: 6px 10px;
+        flex: 0 0 auto;
     }
 }
 
@@ -283,10 +252,10 @@
 @media (min-width: 901px) and (orientation: landscape) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
-        width: min(88vw, calc((100dvh - 36px) * (4 / 3))) !important;
-        max-width: none !important;
-        aspect-ratio: 4 / 3 !important;
-        flex: 0 0 auto !important;
+        width: min(88vw, calc((100dvh - 36px) * (4 / 3)));
+        max-width: none;
+        aspect-ratio: 4 / 3;
+        flex: 0 0 auto;
     }
 }
 
@@ -329,7 +298,7 @@
 #sliderHandle {
     width: 56px;
     height: 56px;
-    background: radial-gradient(circle, var(--accent), var(--accent));
+    background: var(--accent);
     border-radius: 50%;
     position: absolute;
     top: 50%;
@@ -390,38 +359,6 @@
 .mobile-btn-shoot:active {
     transform: translateY(4px);
     box-shadow: 0 2px 0 #6d1526, 0 5px 10px rgba(0, 0, 0, 0.4);
-}
-
-/* ==========================================================================
-   WSPARCIE DLA CZERWONEGO MOTYWU (Ciało z klasą .theme-red)
-   ========================================================================== */
-
-body.theme-red .shooter-container:hover {
-    border-color: #ff0000;
-}
-
-body.theme-red .fullscreen-btn {
-    border-color: #ff0000;
-}
-
-body.theme-red .fullscreen-btn:hover {
-    background: #ff0000;
-    color: #ffffff;
-}
-
-body.theme-red #sliderHandle {
-    background: radial-gradient(circle, #ff0000, #ff0000);
-    box-shadow: 0 0 20px #ff0000;
-}
-
-body.theme-red .mobile-btn-shoot {
-    background: linear-gradient(#ff3333, #b30000) !important;
-    color: #ffffff !important;
-    box-shadow: 0 6px 0 #660000, 0 10px 20px rgba(0, 0, 0, 0.4) !important;
-}
-
-body.theme-red .mobile-btn-shoot:active {
-    box-shadow: 0 2px 0 #660000, 0 5px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* ==========================================================================

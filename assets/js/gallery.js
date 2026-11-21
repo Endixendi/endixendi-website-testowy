@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             img.alt = description;
             img.loading = 'lazy';
             img.style.opacity = '0';
-            img.style.transition = 'opacity 0.8s ease';
 
             const caption = document.createElement('p');
             caption.className = 'gallery-caption';

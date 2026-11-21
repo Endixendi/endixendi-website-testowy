@@ -12,6 +12,9 @@
     --glass: rgba(255, 255, 255, 0.03); /* Efekt szkła */
     --maxw: 1100px;           /* Maksymalna szerokość kontenera */
     --transition: 0.25s ease;
+    --danger: #ff4d6d;        /* Kolor błędu / trafienia / przegranej */
+    --warning: #ff9f1c;       /* Kolor ostrzeżenia */
+    --on-accent: #000;        /* Kolor tekstu na tle --accent */
     font-family: Inter, system-ui, -apple-system, Arial, sans-serif;
 }
 
@@ -31,6 +34,7 @@ body {
     color: #e6eef6;
     line-height: 1.5;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: clip;
     color-scheme: dark;
 }
@@ -155,7 +159,7 @@ header {
 /* Wsparcie dla linku aktywnego (wskazywanego przez podstronę) */
 #main-nav a.active {
     color: var(--accent);
-    background: rgba(0, 170, 255, 0.06);
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 /* ==========================================================================
@@ -231,7 +235,7 @@ header {
 }
 
 .dropdown-content a:hover {
-    background: rgba(0, 170, 255, 0.08);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
     color: #fff;
     padding-left: 20px; /* Eleganckie przesunięcie w prawo podczas hoveru */
 }
@@ -277,7 +281,7 @@ header {
     height: 300px;
     animation: spin 3s linear infinite;
     object-fit: contain;
-    filter: drop-shadow(0 0 150px rgba(29, 63, 143, 1.0));
+    filter: drop-shadow(0 0 40px rgba(29, 63, 143, 0.9));
 }
 
 @keyframes spin {
@@ -292,7 +296,9 @@ header {
 /* Klasa do ukrycia loadera przez JS */
 .loader-hidden {
     opacity: 0;
+    visibility: hidden;      /* zatrzymuje animację i render po zniknięciu */
     pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 }
 
 /* ==========================================================================
@@ -313,14 +319,9 @@ main {
 }
 
 .hero > .card-container {
-    flex: 2;
     display: grid;
     grid-template-columns: 1fr 1fr; /* Dwie karty w rzędzie */
     gap: 16px;
-}
-
-.hero > aside { 
-    flex: 1; 
 }
 
 .hero > * {
@@ -342,7 +343,7 @@ main {
 .card:hover {
     transform: translateY(-4px);
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 
-                0 0 20px rgba(0, 170, 255, 0.15); 
+                0 0 20px color-mix(in srgb, var(--accent) 15%, transparent); 
     border-color: var(--accent); 
     opacity: 1;
 }
@@ -388,14 +389,6 @@ a.btn:active,
     transform: scale(0.96);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     opacity: 0.9;
-}
-
-/* Efekty hover zunifikowane pod kątem wydajności przejść */
-.btn:hover,
-a.btn:hover,
-.ghost:hover,
-a.inline-link:hover {
-    transition: all 0.2s ease-in-out;
 }
 
 .btn:hover,
@@ -529,7 +522,7 @@ footer {
     margin-top: 80px; 
     padding: 60px 20px;
     background: linear-gradient(180deg, #14171b 0%, #050505 100%);
-    border-top: 1px solid rgba(0, 170, 255, 0.1); 
+    border-top: 1px solid color-mix(in srgb, var(--accent) 10%, transparent); 
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     position: relative;
 }
@@ -675,18 +668,11 @@ footer {
 }
 
 /* ==========================================================================
-   Widgety zewnętrzne (Snapwidget, Spotify) i Klasy pomocnicze
+   Widgety zewnętrzne (Behold, Spotify) i Klasy pomocnicze
    ========================================================================== */
 
 .widget-margin-top {
 	margin-top: 20px;
-}
-
-.snapwidget-widget {
-    border: none;
-    overflow: hidden;
-    width: 100%;
-    margin-top: 20px;
 }
 
 .muted { 
@@ -696,16 +682,21 @@ footer {
 a.inline-link {
     color: var(--accent);
     text-decoration: none;
+    transition: color var(--transition);
 }
 
-a.inline-link:hover { 
-    text-decoration: underline; 
+a.inline-link:hover {
+    color: var(--accent-2);
+    text-decoration: underline;
 }
 
 .mt-12 { margin-top: 12px; }
 .mt-16 { margin-top: 16px; }
 .mt-18 { margin-top: 18px; }
 .mt-22 { margin-top: 22px; }
+.mt-15 { margin-top: 15px; }
+.mb-0 { margin-bottom: 0; }
+.text-center { text-align: center; }
 
 /* ==========================================================================
    Struktury list (Tekst specyfikacji PC itp.)
@@ -996,7 +987,7 @@ body.theme-youtube    { --accent: #ff1606; --accent-2: #ffffff; }
 body.theme-new        { --accent: #ffff06; --accent-2: #ffa12c; }
 
 /* Motyw: CZERWONY (Jednolity) */
-body.theme-red	 	{ --accent: #ff0000; --accent-2: #ff0000; }
+body.theme-red { --accent: #ff0000; --accent-2: #ff0000; --on-accent: #ffffff; }
 
 /* Motyw: ZIELONY (Jednolity) */
 body.theme-green 	{ --accent: #00dc04; --accent-2: #00dc04; }
@@ -1095,12 +1086,7 @@ body.theme-green #main-nav a.active {
     border-color: var(--accent);
     transform: translateY(-5px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 
-                0 0 15px rgba(0, 170, 255, 0.3);
-}
-
-body.theme-red .floating-back-to-top:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 
-                0 0 15px rgba(255, 0, 0, 0.3) !important;
+                0 0 15px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 @media (max-width: 600px) {
@@ -1206,10 +1192,6 @@ body.theme-red .floating-back-to-top:hover {
 /* ==========================================================================
    RESPONSYWNOŚĆ I MEDIA QUERIES
    ========================================================================== */
-
-section { 
-    scroll-margin-top: 90px; 
-}
 
 /* ==========================================================================
    ZAKAMUFLOWANY SYSTEM SKRÓTÓW STRONY (INDEX)
@@ -1436,10 +1418,6 @@ section {
         margin-top: 20px;
     }
     
-    .snapwidget-widget { 
-        width: 100%; 
-        aspect-ratio: 25 / 10; 
-    }
 }
 
 /* ==========================================================================

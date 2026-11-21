@@ -85,11 +85,7 @@ if (!canvas) {
     let scale = 1;
 
     function isFullscreenActive() {
-        return Boolean(
-            document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            (shooterStage && shooterStage.classList.contains("is-fullscreen"))
-        );
+        return GameFullscreen.isActive(shooterStage);
     }
 
     function resizeCanvas() {
@@ -129,32 +125,7 @@ if (!canvas) {
     }
 
     function toggleFullscreen() {
-        if (!shooterStage) return;
-
-        if (isFullscreenActive()) {
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch(() => {});
-            } else if (document.webkitFullscreenElement) {
-                document.webkitExitFullscreen();
-            }
-            shooterStage.classList.remove("is-fullscreen");
-            updateFullscreenUI();
-        } else {
-            if (shooterStage.requestFullscreen) {
-                shooterStage.requestFullscreen().then(() => {
-                    updateFullscreenUI();
-                }).catch(() => {
-                    shooterStage.classList.add("is-fullscreen");
-                    updateFullscreenUI();
-                });
-            } else if (shooterStage.webkitRequestFullscreen) {
-                shooterStage.webkitRequestFullscreen();
-                updateFullscreenUI();
-            } else {
-                shooterStage.classList.add("is-fullscreen");
-                updateFullscreenUI();
-            }
-        }
+        GameFullscreen.toggle(shooterStage, updateFullscreenUI);
     }
 
     class Player {

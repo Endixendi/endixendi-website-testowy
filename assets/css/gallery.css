@@ -33,14 +33,13 @@
     background-color: #2c3e50;
     
     /* KONFIGURACJA ANIMACJI ZDJĘCIA */
-    will-change: transform;
-    transition: transform 0.5s ease-out !important;
+    transition: transform 0.5s ease-out, opacity 0.8s ease;
     transform: scale(1);
 }
 
 /* EFEKT ZOOM PO NAJECHANIU */
 .gallery-item:hover img {
-    transform: scale(1.1) !important;
+    transform: scale(1.1);
 }
 
 .gallery-caption {
@@ -173,33 +172,6 @@
 }
 .cinema-thumbnails::-webkit-scrollbar-thumb:hover {
     background: var(--accent);
-}
-
-/* ==========================================================================
-   ANIMACJE I WSPARCIE DLA CZERWONEGO MOTYWU (body.theme-red)
-   ========================================================================== */
-
-/* Zmiana akcentów galerii w trybie czerwonym */
-body.theme-red .gallery-item:hover {
-    border-color: #ff0000 !important;
-}
-
-body.theme-red .img-loader {
-    border-top-color: #ff0000 !important;
-}
-
-body.theme-red .cinema-arrow:hover {
-    color: #ff0000 !important;
-    border-color: #ff0000 !important;
-}
-
-body.theme-red .cinema-thumb:hover, 
-body.theme-red .cinema-thumb.active {
-    border-color: #ff0000 !important;
-}
-
-body.theme-red .cinema-thumbnails::-webkit-scrollbar-thumb:hover {
-    background: #ff0000 !important;
 }
 
 /* ==========================================================================

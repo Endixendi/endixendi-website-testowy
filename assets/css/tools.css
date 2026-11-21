@@ -142,8 +142,8 @@
 }
 
 .search-input:focus {
-    border-color: var(--accent, #ff0000);
-    box-shadow: 0 0 10px var(--accent-glow, rgba(255, 0, 0, 0.3));
+    border-color: var(--accent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* Nagłówek karty z Badge'em */
@@ -264,15 +264,3 @@
     background-color: #2a2a32;
 }
 
-/* =========================================================================
-   CZERWONY MOTYW (.theme-red)
-   ========================================================================= */
-
-body.theme-red .tools-section-title,
-body.theme-red .tool-card h4 {
-    color: #ff0000;
-}
-
-body.theme-red .tool-card:hover {
-    border-color: rgba(255, 0, 0, 0.4);
-}

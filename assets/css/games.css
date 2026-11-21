@@ -1,0 +1,35 @@
+/* ==========================================================================
+   WSPÓLNE STYLE GIER (dino, tetris, shooter)
+   Ładować PO style.css, a PRZED plikiem danej gry.
+   ========================================================================== */
+
+/* Przycisk pełnego ekranu - pozycję ustawia plik konkretnej gry */
+.fullscreen-btn {
+    position: absolute;
+    z-index: 25;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: rgba(15, 17, 21, 0.78);
+    color: #ffffff;
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.fullscreen-btn:hover {
+    background: var(--accent);
+    color: var(--on-accent);
+    transform: scale(1.05);
+}
+
+.fullscreen-btn:active {
+    transform: scale(0.95);
+}

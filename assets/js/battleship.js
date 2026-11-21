@@ -69,11 +69,7 @@ if (effectsSlider) {
 /* --- OBSŁUGA PEŁNEGO EKRANU --- */
 
 function isFullscreenActive() {
-    return Boolean(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        (battleshipContainer && battleshipContainer.classList.contains('is-fullscreen'))
-    );
+    return GameFullscreen.isActive(battleshipContainer);
 }
 
 function updateFullscreenUI() {
@@ -87,32 +83,7 @@ function updateFullscreenUI() {
 }
 
 function toggleFullscreen() {
-    if (!battleshipContainer) return;
-
-    if (isFullscreenActive()) {
-        if (document.fullscreenElement) {
-            document.exitFullscreen().catch(() => {});
-        } else if (document.webkitFullscreenElement) {
-            document.webkitExitFullscreen();
-        }
-        battleshipContainer.classList.remove('is-fullscreen');
-        updateFullscreenUI();
-    } else {
-        if (battleshipContainer.requestFullscreen) {
-            battleshipContainer.requestFullscreen().then(() => {
-                updateFullscreenUI();
-            }).catch(() => {
-                battleshipContainer.classList.add('is-fullscreen');
-                updateFullscreenUI();
-            });
-        } else if (battleshipContainer.webkitRequestFullscreen) {
-            battleshipContainer.webkitRequestFullscreen();
-            updateFullscreenUI();
-        } else {
-            battleshipContainer.classList.add('is-fullscreen');
-            updateFullscreenUI();
-        }
-    }
+    GameFullscreen.toggle(battleshipContainer, updateFullscreenUI);
 }
 
 /* --- INICJALIZACJA --- */
@@ -260,7 +231,7 @@ function endTurn() {
         turnStatus.style.color = "var(--accent)";
     } else {
         turnStatus.textContent = "RUCH KOMPUTERA";
-        turnStatus.style.color = "#ff4d6d";
+        turnStatus.style.color = "var(--danger)";
         setTimeout(botTurn, 800);
     }
 }
@@ -450,7 +421,7 @@ function playAudio(type) {
     try {
         if (audio[type]) {
             audio[type].currentTime = 0;
-            audio[type].play();
+            audio[type].play().catch(() => {});
         }
     } catch (e) {
         console.log("Audio error", e);

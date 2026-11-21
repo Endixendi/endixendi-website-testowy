@@ -69,11 +69,7 @@ const V_HEIGHT = 350;
 let scale = 1;
 
 function isFullscreenActive() {
-    return Boolean(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        (dinoContainer && dinoContainer.classList.contains('is-fullscreen'))
-    );
+    return GameFullscreen.isActive(dinoContainer);
 }
 
 function resizeCanvas() {
@@ -119,33 +115,7 @@ function updateFullscreenState() {
 }
 
 function toggleFullscreen() {
-    if (!dinoContainer) return;
-
-    if (isFullscreenActive()) {
-        if (document.fullscreenElement) {
-            document.exitFullscreen().catch(() => {});
-        } else if (document.webkitFullscreenElement) {
-            document.webkitExitFullscreen();
-        }
-        dinoContainer.classList.remove('is-fullscreen');
-        updateFullscreenState();
-    } else {
-        if (dinoContainer.requestFullscreen) {
-            dinoContainer.requestFullscreen().then(() => {
-                updateFullscreenState();
-            }).catch(() => {
-                dinoContainer.classList.add('is-fullscreen');
-                updateFullscreenState();
-            });
-        } else if (dinoContainer.webkitRequestFullscreen) {
-            dinoContainer.webkitRequestFullscreen();
-            updateFullscreenState();
-        } else {
-            // Fallback dla urządzeń bez wsparcia Fullscreen API (np. iPhone iOS Safari)
-            dinoContainer.classList.add('is-fullscreen');
-            updateFullscreenState();
-        }
-    }
+    GameFullscreen.toggle(dinoContainer, updateFullscreenState);
 }
 
 function getAccentColor(fallback) {

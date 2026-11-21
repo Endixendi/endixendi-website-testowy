@@ -87,11 +87,7 @@ const player = {
 // --- PEŁNY EKRAN ---
 
 function isFullscreenActive() {
-    return Boolean(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        (tetrisContainer && tetrisContainer.classList.contains('is-fullscreen'))
-    );
+    return GameFullscreen.isActive(tetrisContainer);
 }
 
 function updateFullscreenUI() {
@@ -106,32 +102,7 @@ function updateFullscreenUI() {
 }
 
 function toggleFullscreen() {
-    if (!tetrisContainer) return;
-
-    if (isFullscreenActive()) {
-        if (document.fullscreenElement) {
-            document.exitFullscreen().catch(() => {});
-        } else if (document.webkitFullscreenElement) {
-            document.webkitExitFullscreen();
-        }
-        tetrisContainer.classList.remove('is-fullscreen');
-        updateFullscreenUI();
-    } else {
-        if (tetrisContainer.requestFullscreen) {
-            tetrisContainer.requestFullscreen().then(() => {
-                updateFullscreenUI();
-            }).catch(() => {
-                tetrisContainer.classList.add('is-fullscreen');
-                updateFullscreenUI();
-            });
-        } else if (tetrisContainer.webkitRequestFullscreen) {
-            tetrisContainer.webkitRequestFullscreen();
-            updateFullscreenUI();
-        } else {
-            tetrisContainer.classList.add('is-fullscreen');
-            updateFullscreenUI();
-        }
-    }
+    GameFullscreen.toggle(tetrisContainer, updateFullscreenUI);
 }
 
 // --- RYSOWANIE ---
