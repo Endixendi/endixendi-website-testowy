@@ -219,12 +219,13 @@
     border-radius: 0 !important;
     background: #0a0c10 !important;
     z-index: 99999 !important;
-    padding: 16px 24px !important;
+    padding: 14px 20px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
 }
 
 /* Na PC w poziomie plansze układają się obok siebie i skalują wygodnie do ekranu */
@@ -259,22 +260,36 @@
 @media (max-width: 768px), (orientation: portrait) {
     .game-wrapper.is-fullscreen,
     .game-wrapper:fullscreen {
-        padding: 12px !important;
+        padding: 10px !important;
         justify-content: flex-start !important;
-        gap: 10px !important;
+        gap: 8px !important;
+    }
+
+    .game-wrapper.is-fullscreen .game-controls-bar,
+    .game-wrapper:fullscreen .game-controls-bar {
+        gap: 8px !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 6px !important;
     }
 
     .game-wrapper.is-fullscreen .boards-container,
     .game-wrapper:fullscreen .boards-container {
-        gap: 14px !important;
-        margin-top: 4px !important;
+        gap: 10px !important;
+        margin-top: 2px !important;
+    }
+
+    .game-wrapper.is-fullscreen .board-header,
+    .game-wrapper:fullscreen .board-header {
+        margin-bottom: 4px !important;
+        padding-bottom: 2px !important;
     }
 
     .game-wrapper.is-fullscreen .battleship-grid,
     .game-wrapper:fullscreen .battleship-grid {
-        --mobile-fs-cell: clamp(22px, min(7.2vw, calc((100dvh - 340px) / 20)), 32px);
+        --mobile-fs-cell: clamp(18px, min(5.6vw, calc((100dvh - 360px) / 20)), 26px);
         grid-template-columns: repeat(10, var(--mobile-fs-cell)) !important;
         grid-template-rows: repeat(10, var(--mobile-fs-cell)) !important;
+        padding: 3px !important;
     }
 
     .game-wrapper.is-fullscreen .cell,
@@ -283,9 +298,22 @@
         height: var(--mobile-fs-cell) !important;
     }
 
+    .game-wrapper.is-fullscreen .game-log-container,
+    .game-wrapper:fullscreen .game-log-container {
+        flex: 0 0 auto !important;
+        margin-top: 8px !important;
+        border-color: var(--accent) !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+
     .game-wrapper.is-fullscreen .log-content,
     .game-wrapper:fullscreen .log-content {
-        height: 85px !important;
+        height: 80px !important;
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+        display: flex !important;
+        visibility: visible !important;
     }
 }
 
