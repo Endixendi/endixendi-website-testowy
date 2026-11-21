@@ -6,6 +6,8 @@ const BOARD_SIZE = 10;
 const SHIPS_CONFIG = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 
 // Elementy DOM
+const battleshipContainer = document.getElementById('battleshipContainer');
+const btnFullscreen = document.getElementById('btn-fullscreen');
 const playerGrid = document.getElementById('player-grid');
 const computerGrid = document.getElementById('computer-grid');
 const btnRandomize = document.getElementById('btn-randomize');
@@ -27,7 +29,7 @@ const gameState = {
     botQueue: [],
     lastHit: null,
     huntDirection: null,
-    difficulty: 'easy' // NOWE: Domyślny poziom
+    difficulty: 'easy'
 };
 
 // Dźwięki
@@ -62,6 +64,54 @@ if (effectsSlider) {
         audio.win.volume = vol;
         audio.lose.volume = vol;
     });
+}
+
+/* --- OBSŁUGA PEŁNEGO EKRANU --- */
+
+function isFullscreenActive() {
+    return Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        (battleshipContainer && battleshipContainer.classList.contains('is-fullscreen'))
+    );
+}
+
+function updateFullscreenUI() {
+    const active = isFullscreenActive();
+    if (btnFullscreen) {
+        btnFullscreen.textContent = active ? '✕ Wyjdź z pełnego ekranu' : '⛶ Pełny ekran';
+        btnFullscreen.title = active ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran';
+    }
+    document.body.style.overflow = active ? 'hidden' : '';
+}
+
+function toggleFullscreen() {
+    if (!battleshipContainer) return;
+
+    if (isFullscreenActive()) {
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitFullscreenElement) {
+            document.webkitExitFullscreen();
+        }
+        battleshipContainer.classList.remove('is-fullscreen');
+        updateFullscreenUI();
+    } else {
+        if (battleshipContainer.requestFullscreen) {
+            battleshipContainer.requestFullscreen().then(() => {
+                updateFullscreenUI();
+            }).catch(() => {
+                battleshipContainer.classList.add('is-fullscreen');
+                updateFullscreenUI();
+            });
+        } else if (battleshipContainer.webkitRequestFullscreen) {
+            battleshipContainer.webkitRequestFullscreen();
+            updateFullscreenUI();
+        } else {
+            battleshipContainer.classList.add('is-fullscreen');
+            updateFullscreenUI();
+        }
+    }
 }
 
 /* --- INICJALIZACJA --- */
@@ -222,12 +272,9 @@ function botTurn() {
     let target = null;
     let cheatChance = 0;
 
-    // Definiujemy szanse na oszustwo dla każdego trybu
-    if (gameState.difficulty === 'hard') cheatChance = 0.3;    // 30% szans
-    if (gameState.difficulty === 'cheater') cheatChance = 0.7; // 70% szans
+    if (gameState.difficulty === 'hard') cheatChance = 0.3;
+    if (gameState.difficulty === 'cheater') cheatChance = 0.7;
 
-    // --- LOGIKA OSZUKIWANIA ---
-    // Bot oszukuje tylko jeśli nie jest w trakcie zatapiania konkretnego statku (pusta kolejka)
     if (gameState.botQueue.length === 0 && Math.random() < cheatChance) {
         const playerShipCoordinates = [];
         for (let y = 0; y < BOARD_SIZE; y++) {
@@ -241,7 +288,6 @@ function botTurn() {
         if (playerShipCoordinates.length > 0) {
             target = playerShipCoordinates[Math.floor(Math.random() * playerShipCoordinates.length)];
 
-            // Inny komunikat dla trybu Cheater
             if (gameState.difficulty === 'cheater') {
                 log("!!! SYSTEMY ZAKŁÓCONE: Wróg namierzył Twój sygnał !!!", "enemy");
             } else {
@@ -250,9 +296,7 @@ function botTurn() {
         }
     }
 
-    // Jeśli nie oszukał, używa standardowej logiki (losowanie lub kolejka sąsiadów)
     if (!target) {
-        // Czyścimy kolejkę z pól, które zostały już wcześniej ostrzelane przez losowe strzały lub oszustwa
         while (gameState.botQueue.length > 0 && gameState.playerShips[gameState.botQueue[0].y][gameState.botQueue[0].x] >= 2) {
             gameState.botQueue.shift();
         }
@@ -414,6 +458,20 @@ function playAudio(type) {
 
 /* --- LISTENERY --- */
 
+if (btnFullscreen) {
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+}
+
+document.addEventListener('fullscreenchange', updateFullscreenUI);
+document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape' && battleshipContainer && battleshipContainer.classList.contains('is-fullscreen')) {
+        battleshipContainer.classList.remove('is-fullscreen');
+        updateFullscreenUI();
+    }
+});
+
 btnRandomize.addEventListener('click', () => {
     randomizeShips(gameState.playerShips);
     renderGrid(playerGrid, gameState.playerShips, true);
@@ -422,15 +480,13 @@ btnRandomize.addEventListener('click', () => {
 
 btnStart.addEventListener('click', () => {
     gameState.active = true;
-    gameState.difficulty = difficultySelect.value; // Pobieramy wybrany poziom
+    gameState.difficulty = difficultySelect.value;
 
-    // --- NOWOŚĆ: Zarządzanie klasą wizualną logów ---
     if (gameState.difficulty === 'cheater') {
         logContent.classList.add('mode-cheater');
     } else {
         logContent.classList.remove('mode-cheater');
     }
-    // -----------------------------------------------
 
     randomizeShips(gameState.computerShips);
     computerGrid.classList.remove('locked');
