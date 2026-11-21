@@ -79,6 +79,11 @@ if (!canvas) {
         if (k !== 'bg') sounds[k].volume = 0.3;
     });
 
+    // WIRTUALNA ROZDZIELCZOŚĆ (Stałe proporcje 4:3 jak w Dino)
+    const V_WIDTH = 800;
+    const V_HEIGHT = 600;
+    let scale = 1;
+
     function isFullscreenActive() {
         return Boolean(
             document.fullscreenElement ||
@@ -92,23 +97,21 @@ if (!canvas) {
         if (!container) return;
 
         const rect = container.getBoundingClientRect();
-        const width = Math.max(200, Math.floor(rect.width || container.offsetWidth || 800));
-        const height = Math.max(150, Math.floor(rect.height || width * 0.75));
+        const availW = Math.max(200, rect.width || container.offsetWidth || 800);
+        const availH = Math.max(150, rect.height || availW * 0.75);
+        const aspect = V_WIDTH / V_HEIGHT;
 
-        canvas.width = width;
-        canvas.height = height;
+        let targetWidth = availW;
+        let targetHeight = targetWidth / aspect;
 
-        if (gameState.player) {
-            const prevRatio = (canvas.width > 0) ? (gameState.player.x / canvas.width) : 0.5;
-            gameState.player.width = canvas.width * 0.06;
-            gameState.player.height = gameState.player.width;
-            gameState.player.speed = canvas.width * 0.8;
-            gameState.player.x = Math.min(
-                Math.max(0, prevRatio * canvas.width),
-                Math.max(0, canvas.width - gameState.player.width)
-            );
-            gameState.player.y = canvas.height - gameState.player.height - 10;
+        if (targetHeight > availH) {
+            targetHeight = availH;
+            targetWidth = targetHeight * aspect;
         }
+
+        scale = targetWidth / V_WIDTH;
+        canvas.width = Math.floor(targetWidth);
+        canvas.height = Math.floor(targetHeight);
     }
 
     function updateFullscreenUI() {
@@ -156,11 +159,11 @@ if (!canvas) {
 
     class Player {
         constructor() {
-            this.width = canvas.width * 0.06;
-            this.height = this.width;
-            this.x = canvas.width / 2 - this.width / 2;
-            this.y = canvas.height - this.height - 10;
-            this.speed = canvas.width * 0.8;
+            this.width = 48;
+            this.height = 48;
+            this.x = V_WIDTH / 2 - this.width / 2;
+            this.y = V_HEIGHT - this.height - 15;
+            this.speed = 640;
         }
         draw() {
             ctx.fillStyle = gameState.isOverheated ? "#555" : "orange";
@@ -168,7 +171,7 @@ if (!canvas) {
         }
         update(dt) {
             if (gameState.keys["ArrowLeft"]) this.x = Math.max(0, this.x - this.speed * dt);
-            if (gameState.keys["ArrowRight"]) this.x = Math.min(canvas.width - this.width, this.x + this.speed * dt);
+            if (gameState.keys["ArrowRight"]) this.x = Math.min(V_WIDTH - this.width, this.x + this.speed * dt);
         }
     }
 
@@ -196,8 +199,8 @@ if (!canvas) {
         constructor(x, y) {
             this.x = x;
             this.y = y;
-            this.width = canvas.width * 0.07;
-            this.height = this.width;
+            this.width = 56;
+            this.height = 56;
             this.speed = gameState.currentEnemySpeed;
             this.lastShot = 0;
             this.shootInterval = Math.random() * 2 + 1;
@@ -220,14 +223,14 @@ if (!canvas) {
 
     class Star {
         constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
+            this.x = Math.random() * V_WIDTH;
+            this.y = Math.random() * V_HEIGHT;
             this.size = Math.random() * 2;
             this.speed = Math.random() * 40 + 10;
         }
         update(dt) {
             this.y += this.speed * dt;
-            if (this.y > canvas.height) this.y = 0;
+            if (this.y > V_HEIGHT) this.y = 0;
             ctx.fillStyle = "white";
             ctx.fillRect(this.x, this.y, this.size, this.size);
         }
@@ -253,7 +256,7 @@ if (!canvas) {
         gameState.enemySpawnTimer = 0;
         gameState.lastPlayerShot = GAME_CONFIG.playerShootCooldown;
         gameState.stars = Array.from({ length: 60 }, () => new Star());
-        gameState.currentEnemySpeed = canvas.width * 0.15;
+        gameState.currentEnemySpeed = 120;
         gameState.currentSpawnRate = GAME_CONFIG.initialEnemySpawnRate;
         gameState.lastTime = performance.now();
 
@@ -339,6 +342,8 @@ if (!canvas) {
         }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(scale, scale);
 
         if (gameState.isOverheated) {
             gameState.overheatTimer -= dt * 1000;
@@ -359,7 +364,7 @@ if (!canvas) {
 
         gameState.enemySpawnTimer += dt * 1000;
         if (gameState.enemySpawnTimer >= gameState.currentSpawnRate) {
-            gameState.enemies.push(new Enemy(Math.random() * Math.max(0, canvas.width - 40), -40));
+            gameState.enemies.push(new Enemy(Math.random() * Math.max(0, V_WIDTH - 56), -56));
             gameState.enemySpawnTimer = 0;
         }
 
@@ -389,7 +394,7 @@ if (!canvas) {
                 e.toRemove = true;
                 takeDamage(15);
             }
-            if (!gameState.gameOver && e.y > canvas.height) {
+            if (!gameState.gameOver && e.y > V_HEIGHT) {
                 e.toRemove = true;
                 takeDamage(5);
             }
@@ -407,8 +412,10 @@ if (!canvas) {
         });
 
         gameState.bullets = gameState.bullets.filter(b => !b.toRemove && b.y > -20);
-        gameState.enemies = gameState.enemies.filter(e => !e.toRemove && e.y < canvas.height + 20);
-        gameState.enemyBullets = gameState.enemyBullets.filter(b => b.y < canvas.height + 20 && !b.toRemove);
+        gameState.enemies = gameState.enemies.filter(e => !e.toRemove && e.y < V_HEIGHT + 20);
+        gameState.enemyBullets = gameState.enemyBullets.filter(b => b.y < V_HEIGHT + 20 && !b.toRemove);
+
+        ctx.restore();
 
         updateHUD();
         if (!gameState.gameOver) {
@@ -493,7 +500,7 @@ if (!canvas) {
             if (sliderHandle) {
                 sliderHandle.style.left = (val * 100) + "%";
             }
-            gameState.player.x = val * (canvas.width - gameState.player.width);
+            gameState.player.x = val * (V_WIDTH - gameState.player.width);
         };
 
         if (sliderArea) {
