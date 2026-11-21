@@ -3,7 +3,6 @@
    ========================================================================== */
 
 :root {
-    /* Gra korzysta bezpośrednio z globalnych zmiennych Twojej strony */
     --danger: #ff4d6d;
     --warning: #ff9f1c;
 }
@@ -88,7 +87,6 @@
     font-size: 18px;
 }
 
-/* Pionowy pasek temperatury po lewej stronie */
 #heatBar {
     position: absolute;
     top: 15px;
@@ -104,14 +102,13 @@
 
 #heatFillBar {
     width: 100%;
-    height: 0%; 
+    height: 0%;
     position: absolute;
     bottom: 0;
     background: var(--accent-2);
     transition: height 0.1s linear, background 0.3s ease;
 }
 
-/* Pionowy pasek zdrowia po prawej stronie */
 #healthBar {
     position: absolute;
     top: 15px;
@@ -138,7 +135,7 @@
    MENUS (START / GAME OVER)
    ========================================================================== */
 
-#menu, 
+#menu,
 #gameOverMenu {
     position: absolute;
     top: 50%;
@@ -196,32 +193,73 @@
     max-width: none !important;
     background: #0a0c10 !important;
     z-index: 99999 !important;
-    padding: 14px !important;
+    padding: 10px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 12px !important;
-    overflow-y: auto !important;
+    gap: 8px !important;
+    overflow: hidden !important;
 }
 
-/* Na PC / ekranach poziomych plansza zachowuje proporcje 4:3 i mieści się w wysokości ekranu */
-@media (orientation: landscape) and (min-width: 769px) {
+/* Telefon / mały ekran po obróceniu w POZIOM w trybie pełnoekranowym */
+@media (max-width: 900px) and (orientation: landscape) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
-        width: min(88vw, calc((100dvh - 36px) * (4 / 3))) !important;
-        max-width: none !important;
+        width: auto !important;
+        max-width: 92vw !important;
+        height: calc(100dvh - 88px) !important;
+        max-height: calc(100dvh - 88px) !important;
         aspect-ratio: 4 / 3 !important;
         flex: 0 0 auto !important;
     }
+
+    .shooter-stage.is-fullscreen .mobile-controls,
+    .shooter-stage:fullscreen .mobile-controls {
+        display: flex !important;
+        width: 100% !important;
+        max-width: 700px !important;
+        padding: 4px 10px !important;
+        gap: 12px !important;
+        margin-top: 0 !important;
+        flex: 0 0 auto !important;
+    }
+
+    .shooter-stage.is-fullscreen #touchSliderArea,
+    .shooter-stage:fullscreen #touchSliderArea {
+        height: 52px !important;
+        border-radius: 26px !important;
+    }
+
+    .shooter-stage.is-fullscreen #sliderHandle,
+    .shooter-stage:fullscreen #sliderHandle {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 16px !important;
+    }
+
+    .shooter-stage.is-fullscreen .mobile-btn-shoot,
+    .shooter-stage:fullscreen .mobile-btn-shoot {
+        flex: 0 0 60px !important;
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 12px !important;
+    }
+
+    .shooter-stage.is-fullscreen #heatBar,
+    .shooter-stage:fullscreen #heatBar,
+    .shooter-stage.is-fullscreen #healthBar,
+    .shooter-stage:fullscreen #healthBar {
+        height: 80px !important;
+    }
 }
 
-/* Na telefonach / ekranach pionowych w trybie pełnoekranowym */
-@media (max-width: 768px), (orientation: portrait) {
+/* Telefon / mały ekran w PIONIE w trybie pełnoekranowym */
+@media (max-width: 768px) and (orientation: portrait) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
-        width: min(94vw, calc((100dvh - 155px) * (4 / 3))) !important;
+        width: min(94vw, calc((100dvh - 135px) * (4 / 3))) !important;
         max-width: 100% !important;
         aspect-ratio: 4 / 3 !important;
         flex: 0 0 auto !important;
@@ -233,7 +271,18 @@
         width: 100% !important;
         max-width: 650px !important;
         margin-top: 0 !important;
-        padding: 8px 12px !important;
+        padding: 6px 10px !important;
+        flex: 0 0 auto !important;
+    }
+}
+
+/* Duży ekran / PC w poziomie w trybie pełnoekranowym */
+@media (min-width: 901px) and (orientation: landscape) {
+    .shooter-stage.is-fullscreen .shooter-container,
+    .shooter-stage:fullscreen .shooter-container {
+        width: min(88vw, calc((100dvh - 36px) * (4 / 3))) !important;
+        max-width: none !important;
+        aspect-ratio: 4 / 3 !important;
         flex: 0 0 auto !important;
     }
 }
@@ -315,8 +364,8 @@
     height: 100px;
     border-radius: 50%;
     border: none;
-    background: linear-gradient(#ff4d6d, #a30b2e); 
-    color: white; 
+    background: linear-gradient(#ff4d6d, #a30b2e);
+    color: white;
     font-weight: 900;
     font-size: 16px;
     text-transform: uppercase;
@@ -385,8 +434,8 @@ body.theme-red .mobile-btn-shoot:active {
         margin-top: 10px;
     }
 
-    #score { 
-        font-size: 16px; 
+    #score {
+        font-size: 16px;
     }
 }
 
