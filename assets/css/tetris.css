@@ -192,7 +192,7 @@
 }
 
 /* PC / duże ekrany w poziomie w trybie pełnoekranowym */
-@media (min-width: 901px) and (orientation: landscape) {
+@media (min-width: 901px) and (orientation: landscape) and (min-height: 561px) {
     .tetris-container.is-fullscreen,
     .tetris-container:fullscreen {
         flex-direction: row;
@@ -207,7 +207,7 @@
 }
 
 /* Telefon / mniejszy ekran po obróceniu w POZIOM w trybie pełnoekranowym */
-@media (max-width: 900px) and (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 560px), (orientation: landscape) and (max-width: 900px) {
     .tetris-container.is-fullscreen,
     .tetris-container:fullscreen {
         flex-direction: row;
@@ -219,9 +219,10 @@
 
     .tetris-container.is-fullscreen #tetrisCanvas,
     .tetris-container:fullscreen #tetrisCanvas {
-        height: calc(100dvh - 14px);
-        width: calc((100dvh - 14px) * 0.5);
-        max-width: 38vw;
+        height: min(calc(100dvh - 14px), 76vw);
+        width: auto;
+        aspect-ratio: 1 / 2;
+        max-width: none;
     }
 
     .tetris-container.is-fullscreen .side-panel,
@@ -366,9 +367,10 @@
 
     .tetris-container.is-fullscreen #tetrisCanvas,
     .tetris-container:fullscreen #tetrisCanvas {
-        height: calc(100dvh - 235px);
-        width: calc((100dvh - 235px) * 0.5);
-        max-width: 78vw;
+        height: min(calc(100dvh - 235px), 156vw);
+        width: auto;
+        aspect-ratio: 1 / 2;
+        max-width: none;
     }
 
     .tetris-container.is-fullscreen .arrow-btn,
@@ -453,4 +455,89 @@
     background: var(--bg);
     color: inherit;
     font: inherit;
+}
+
+/* ==========================================================================
+   LISTA OSIĄGNIĘĆ (taki sam wygląd jak w grach Dino i Statki)
+   ========================================================================== */
+
+.achievements-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0.65;
+}
+
+.achievement.unlocked {
+    opacity: 1;
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.achievement-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.achievement-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+}
+
+.achievement-body small {
+    color: var(--muted);
+}
+
+.achievement-bar {
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.achievement-bar-fill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+}
+
+/* ==========================================================================
+   POPRAWKI TELEFON (poza pełnym ekranem): plansza zawsze mieści się w oknie
+   ========================================================================== */
+@media (max-width: 680px) {
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) #tetrisCanvas {
+        height: max(320px, min(600px, calc(100dvh - 300px)));
+        width: auto;
+        max-width: 100%;
+        aspect-ratio: 1 / 2;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) #tetrisCanvas {
+        height: max(260px, calc(100dvh - 40px));
+        width: auto;
+        max-width: 100%;
+        aspect-ratio: 1 / 2;
+    }
 }

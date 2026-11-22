@@ -13,7 +13,7 @@
     <link rel="icon" href="assets/images/logo-kolo.png" type="image/png">
     <noscript><style>#loader { display: none; }</style></noscript>
 </head>
-<body id="top">
+<body id="top" data-game="tetris">
 
     <div id="loader">
         <img src="assets/images/logo-kolo.png" alt="Loading..." class="loader-logo">
@@ -136,6 +136,13 @@
             </div>
         </section>
 		
+		<section id="tetris-achievements" class="card mt-22">
+			<h3>Osiągnięcia</h3>
+			<p class="muted" id="achievementsProgress"></p>
+			<p class="muted" id="achievementsStats"></p>
+			<ul id="achievementsList" class="achievements-list"></ul>
+		</section>
+
 		<section id="audio-credits" class="card mt-16">
 			<div>
 				<h3>Źródła dźwięków i muzyki:</h3>
@@ -163,6 +170,8 @@
     <script src="assets/js/fullscreen.js"></script>
     <script src="assets/js/tetris.js"></script>
     <script src="assets/js/script.js"></script>
+
+    <script src="assets/js/progress-reset.js"></script>
 
 </body>
 </html>

@@ -375,22 +375,104 @@ const bgCur = { top: LEVEL_THEMES[0].top.slice(), bottom: LEVEL_THEMES[0].bottom
 
 // --- OSIĄGNIĘCIA ---
 
-const ACHIEVEMENTS = {
-    tetris1:   'Pierwszy Tetris',
-    tspin:     'T-spin',
-    b2b:       'Back-to-Back',
-    combo5:    'Combo x5',
-    level10:   'Poziom 10',
-    sprint150: 'Sprint poniżej 2:30',
-    lines500:  '500 linii łącznie'
-};
+// Format taki sam jak w Dino i Statkach: ikona, nazwa, opis oraz (opcjonalnie) cel z postępem.
+// Identyfikatory zostały bez zmian, więc dotychczas zdobyte osiągnięcia zostają zapisane.
+const ACHIEVEMENTS = [
+    { id: 'tetris1',      icon: '🧱', name: 'Pierwszy Tetris',   desc: 'Wyczyść 4 linie naraz.' },
+    { id: 'tspin',        icon: '🌀', name: 'Mistrz T-spinów',   desc: 'Wykonaj T-spin.' },
+    { id: 'b2b',          icon: '🔗', name: 'Back-to-Back',      desc: 'Wykonaj dwa trudne czyszczenia z rzędu (Tetris lub T-spin).' },
+    { id: 'combo5',       icon: '🔥', name: 'Combo x5',          desc: 'Czyść linie 5 razy z rzędu.' },
+    { id: 'level10',      icon: '🚀', name: 'Poziom 10',         desc: 'Osiągnij 10. poziom w jednej grze.' },
+    { id: 'sprint150',    icon: '⏱️', name: 'Sprinter',          desc: 'Ukończ Sprint 40 linii w czasie poniżej 2:30.' },
+    { id: 'lines500',     icon: '📏', name: 'Budowniczy',        desc: 'Wyczyść łącznie 500 linii.',
+      goal: 500, hint: 'Linie łącznie', progress: () => stats.lines },
+    { id: 'challenge180', icon: '🧗', name: 'Twardziel',         desc: 'Przetrwaj 3 minuty w trybie Wyzwanie.' }
+];
+const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
 
 function unlockAch(id) {
-    if (unlockedAch.has(id)) return;
+    const a = ACH_BY_ID[id];
+    if (!a || unlockedAch.has(id)) return;
     unlockedAch.add(id);
     saveJSON(ACH_KEY, Array.from(unlockedAch));
-    run.newAch.push(ACHIEVEMENTS[id]);
-    addFloater(`🏆 ${ACHIEVEMENTS[id]}`, '#ffd000');
+    run.newAch.push(a.name);
+    addFloater(`🏆 ${a.name}`, '#ffd000');
+    renderAchievements();
+}
+
+// Osiągnięcia z celem odblokowują się od razu, jeśli zapisane statystyki już je spełniają
+function syncAchievements() {
+    let changed = false;
+    ACHIEVEMENTS.forEach(a => {
+        if (a.progress && !unlockedAch.has(a.id) && a.progress() >= a.goal) {
+            unlockedAch.add(a.id);
+            changed = true;
+        }
+    });
+    if (changed) saveJSON(ACH_KEY, Array.from(unlockedAch));
+}
+
+function formatPlayTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h > 0 ? `${h} h ${m} min` : `${m} min`;
+}
+
+// Lista osiągnięć widoczna na stronie (sekcja #tetris-achievements)
+function renderAchievements() {
+    const list = document.getElementById('achievementsList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    ACHIEVEMENTS.forEach(a => {
+        const done = unlockedAch.has(a.id);
+        const li = document.createElement('li');
+        li.className = 'achievement' + (done ? ' unlocked' : '');
+
+        const icon = document.createElement('span');
+        icon.className = 'achievement-icon';
+        icon.textContent = done ? a.icon : '🔒';
+
+        const body = document.createElement('span');
+        body.className = 'achievement-body';
+        const name = document.createElement('strong');
+        name.textContent = a.name;
+        const desc = document.createElement('small');
+        desc.textContent = a.desc;
+        body.appendChild(name);
+        body.appendChild(desc);
+
+        // Pasek postępu (tylko osiągnięcia liczone łącznie)
+        if (!done && a.goal && a.progress) {
+            const cur = Math.min(a.goal, a.progress());
+            const pct = Math.round((cur / a.goal) * 100);
+            const bar = document.createElement('span');
+            bar.className = 'achievement-bar';
+            const fill = document.createElement('span');
+            fill.className = 'achievement-bar-fill';
+            fill.style.width = pct + '%';
+            bar.appendChild(fill);
+            const hint = document.createElement('small');
+            hint.textContent = `${a.hint}: ${cur.toLocaleString('pl-PL')} / ${a.goal.toLocaleString('pl-PL')}`;
+            body.appendChild(bar);
+            body.appendChild(hint);
+        }
+
+        li.appendChild(icon);
+        li.appendChild(body);
+        list.appendChild(li);
+    });
+
+    const progress = document.getElementById('achievementsProgress');
+    if (progress) progress.textContent = `Odblokowano: ${unlockedAch.size} / ${ACHIEVEMENTS.length}`;
+
+    const summary = document.getElementById('achievementsStats');
+    if (summary) {
+        summary.textContent =
+            `Rozegrane gry: ${stats.games} • Linie: ${stats.lines.toLocaleString('pl-PL')} • ` +
+            `Tetrisy: ${stats.tetrises} • T-spiny: ${stats.tspins} • ` +
+            `Najlepsze combo: x${stats.bestCombo} • Czas gry: ${formatPlayTime(stats.playSeconds)}`;
+    }
 }
 
 // --- PEŁNY EKRAN ---
@@ -1109,6 +1191,8 @@ function update(time = 0) {
     elapsed += delta;
     updateEffects(dt);
 
+    if (mode === 'challenge' && elapsed >= 180000) unlockAch('challenge180');
+
     if (mode === 'ultra' && elapsed >= ULTRA_MS) {
         elapsed = ULTRA_MS;
         updateTime();
@@ -1256,6 +1340,7 @@ function finalizeRun(reason) {
     saveJSON(STATS_KEY, stats);
     refreshSkinOptions();
     refreshBestDisplay(mode);
+    renderAchievements();
 }
 
 function gameEnd(reason = 'topout') {
@@ -1618,6 +1703,10 @@ window.addEventListener('load', () => {
             }
         });
     }
+
+    // Osiągnięcia na stronie
+    syncAchievements();
+    renderAchievements();
 
     // Lista skórek
     refreshSkinOptions();
