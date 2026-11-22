@@ -71,11 +71,14 @@ sounds.music.loop = true;
 const musicSliderInit = document.getElementById('volume-music');
 sounds.music.volume = musicSliderInit ? parseFloat(musicSliderInit.value) : 0.3;
 
-sounds.line.volume = 0.3;
-sounds.levelup.volume = 0.3;
-sounds.drop.volume = 0.3;
-sounds.rotate.volume = 0.3;
-sounds.gameover.volume = 0.3;
+// Głośność efektów startowa pochodzi z suwaka w tetris.html (atrybut value)
+const effectsSliderInit = document.getElementById('volume-effects');
+const effectsStartVol = effectsSliderInit ? parseFloat(effectsSliderInit.value) : 0.3;
+sounds.line.volume = effectsStartVol;
+sounds.levelup.volume = effectsStartVol;
+sounds.drop.volume = effectsStartVol;
+sounds.rotate.volume = effectsStartVol;
+sounds.gameover.volume = effectsStartVol;
 
 // Stan gry
 let dropCounter = 0, dropInterval = 1000, lastTime = 0;

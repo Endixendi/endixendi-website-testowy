@@ -42,9 +42,12 @@ const audio = {
 };
 
 // Głośność
-Object.values(audio).forEach(s => s.volume = 0.3);
+// Głośność startowa pochodzi z suwaków w battleship.html (atrybut value)
+const initMusicVol = document.getElementById('volume-music');
+const initEffectsVol = document.getElementById('volume-effects');
+Object.values(audio).forEach(s => s.volume = initEffectsVol ? parseFloat(initEffectsVol.value) : 0.3);
 audio.music.loop = true;
-audio.music.volume = 0.1;
+audio.music.volume = initMusicVol ? parseFloat(initMusicVol.value) : 0.1;
 
 /* --- OBSŁUGA GŁOŚNOŚCI --- */
 

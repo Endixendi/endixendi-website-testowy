@@ -77,9 +77,10 @@ if (!canvas) {
     };
 
     sounds.bg.loop = true;
-    sounds.bg.volume = 0.3;
+    // Głośność startowa pochodzi z suwaków w shooter.html (atrybut value)
+    sounds.bg.volume = volumeControl ? parseFloat(volumeControl.value) : 0.3;
     Object.keys(sounds).forEach(k => {
-        if (k !== 'bg') sounds[k].volume = 0.3;
+        if (k !== 'bg') sounds[k].volume = volumeControl1 ? parseFloat(volumeControl1.value) : 0.3;
     });
 
     // WIRTUALNA ROZDZIELCZOŚĆ (Stałe proporcje 4:3 jak w Dino)
