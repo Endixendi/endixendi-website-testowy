@@ -143,7 +143,7 @@ const power = { magnet: 0, slow: 0, double: 0 };
 
 // Statystyki jednego biegu
 function createRun() {
-    return { crystals: 0, shieldBreaks: 0, time: 0, noCrouchTime: 0, distance: 0, newAch: [] };
+    return { crystals: 0, shieldBreaks: 0, time: 0, noCrouchTime: 0, distance: 0, powerKinds: [], newAch: [] };
 }
 let run = createRun();
 
@@ -250,23 +250,95 @@ let currentBiomeIdx = 0;
 // --- OSIĄGNIĘCIA ---
 
 const ACHIEVEMENTS = [
-    { id: 'score1000',  name: 'Rozgrzewka',     test: () => score >= 1000 },
-    { id: 'score5000',  name: 'Maratończyk',    test: () => score >= 5000 },
-    { id: 'score10000', name: 'Legenda',        test: () => score >= 10000 },
-    { id: 'crystals10', name: 'Kolekcjoner',    test: () => run.crystals >= 10 },
-    { id: 'shield3',    name: 'Niezniszczalny', test: () => run.shieldBreaks >= 3 },
-    { id: 'noCrouch60', name: 'Bez kucania',    test: () => run.noCrouchTime >= 60 }
+    { id: 'score1000',  icon: '🔥', name: 'Rozgrzewka',     desc: 'Zdobądź 1000 punktów w jednej grze.',               goal: 1000,  test: () => score >= 1000 },
+    { id: 'score5000',  icon: '🏃', name: 'Maratończyk',    desc: 'Zdobądź 5000 punktów w jednej grze.',               goal: 5000,  test: () => score >= 5000 },
+    { id: 'score10000', icon: '👑', name: 'Legenda',        desc: 'Zdobądź 10 000 punktów w jednej grze.',             goal: 10000, test: () => score >= 10000 },
+    { id: 'crystals10', icon: '💎', name: 'Kolekcjoner',    desc: 'Zbierz 10 kryształów w jednej grze.',                test: () => run.crystals >= 10 },
+    { id: 'shield3',    icon: '🛡️', name: 'Niezniszczalny', desc: 'Przetrwaj 3 uderzenia dzięki tarczy w jednej grze.', test: () => run.shieldBreaks >= 3 },
+    { id: 'noCrouch60', icon: '🦖', name: 'Bez kucania',    desc: 'Biegnij 60 sekund z rzędu bez kucania.',             test: () => run.noCrouchTime >= 60 },
+    { id: 'powers3',    icon: '⚡', name: 'Władca mocy',    desc: 'Zbierz wszystkie 3 rodzaje power-upów w jednej grze.', test: () => run.powerKinds.length >= 3 },
+    { id: 'time180',    icon: '⏱️', name: 'Wytrwały',       desc: 'Przetrwaj 3 minuty w jednej grze.',                  test: () => run.time >= 180 }
 ];
 
 function checkAchievements() {
+    let unlockedNow = false;
     ACHIEVEMENTS.forEach(a => {
         if (!unlockedAch.has(a.id) && a.test()) {
             unlockedAch.add(a.id);
             run.newAch.push(a.name);
             saveJSON('dinoAch', Array.from(unlockedAch));
             showToast(`🏆 Osiągnięcie: ${a.name}`, '#ffd000');
+            unlockedNow = true;
         }
     });
+    if (unlockedNow) renderAchievements();
+}
+
+// Osiągnięcia za wynik odblokowują się od razu, jeśli rekord już je spełnia (np. rekord sprzed ich dodania)
+function syncAchievementsWithHighScore() {
+    let changed = false;
+    ACHIEVEMENTS.forEach(a => {
+        if (a.goal && highScore >= a.goal && !unlockedAch.has(a.id)) {
+            unlockedAch.add(a.id);
+            changed = true;
+        }
+    });
+    if (changed) saveJSON('dinoAch', Array.from(unlockedAch));
+}
+
+// Lista osiągnięć widoczna na stronie (sekcja #dino-achievements)
+function renderAchievements() {
+    const list = document.getElementById('achievementsList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    ACHIEVEMENTS.forEach(a => {
+        const done = unlockedAch.has(a.id);
+        const li = document.createElement('li');
+        li.className = 'achievement' + (done ? ' unlocked' : '');
+
+        const icon = document.createElement('span');
+        icon.className = 'achievement-icon';
+        icon.textContent = done ? a.icon : '🔒';
+
+        const body = document.createElement('span');
+        body.className = 'achievement-body';
+        const name = document.createElement('strong');
+        name.textContent = a.name;
+        const desc = document.createElement('small');
+        desc.textContent = a.desc;
+        body.appendChild(name);
+        body.appendChild(desc);
+
+        // Pasek postępu na podstawie rekordu (tylko osiągnięcia za wynik)
+        if (!done && a.goal) {
+            const pct = Math.min(100, Math.round((highScore / a.goal) * 100));
+            const bar = document.createElement('span');
+            bar.className = 'achievement-bar';
+            const fill = document.createElement('span');
+            fill.className = 'achievement-bar-fill';
+            fill.style.width = pct + '%';
+            bar.appendChild(fill);
+            const hint = document.createElement('small');
+            hint.textContent = `Rekord: ${highScore.toLocaleString('pl-PL')} / ${a.goal.toLocaleString('pl-PL')}`;
+            body.appendChild(bar);
+            body.appendChild(hint);
+        }
+
+        li.appendChild(icon);
+        li.appendChild(body);
+        list.appendChild(li);
+    });
+
+    const progress = document.getElementById('achievementsProgress');
+    if (progress) progress.textContent = `Odblokowano: ${unlockedAch.size} / ${ACHIEVEMENTS.length}`;
+
+    const summary = document.getElementById('achievementsStats');
+    if (summary) {
+        summary.textContent =
+            `Rozegrane gry: ${stats.games} • Kryształy: ${stats.crystals} • ` +
+            `Dystans: ${Math.round(stats.distance)} m • Najdłuższy bieg: ${stats.bestTime} s`;
+    }
 }
 
 function showToast(text, color = '#ffffff') {
@@ -1133,6 +1205,7 @@ function update(realDt) {
                 run.crystals++;
             } else {
                 power[it.kind] = POWER_DURATION;
+                if (!run.powerKinds.includes(it.kind)) run.powerKinds.push(it.kind);
                 showToast(info.name, info.color);
             }
 
@@ -1353,6 +1426,7 @@ function endGame() {
     stats.distance += run.distance;
     stats.bestTime = Math.max(stats.bestTime, Math.round(run.time));
     saveJSON('dinoStats', stats);
+    renderAchievements();
 
     finalScoreEl.textContent = score;
     finalHighScoreEl.textContent = highScore;
@@ -1405,6 +1479,8 @@ window.addEventListener("load", () => {
     resizeCanvas();
     redrawIdle();
     refreshSkinOptions();
+    syncAchievementsWithHighScore();
+    renderAchievements();
 
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', () => {

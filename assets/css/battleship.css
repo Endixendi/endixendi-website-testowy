@@ -576,9 +576,10 @@
     outline-offset: -2px;
 }
 
+/* Bez ramki fokusa wokół całej planszy (kursor klawiatury jest rysowany na polu) */
+#computer-grid:focus,
 #computer-grid:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+    outline: none;
 }
 
 /* Efekty: plusk, wybuch, wstrząs planszy */
@@ -648,38 +649,66 @@
     cursor: not-allowed;
 }
 
-/* Panel statystyk */
-.bs-stats {
-    margin-top: 12px;
+/* ==========================================================================
+   LISTA OSIĄGNIĘĆ (taki sam wygląd jak w grze Dino)
+   ========================================================================== */
+
+.achievements-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--glass);
-    padding: 8px 12px;
-    font-size: 0.85rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0.65;
 }
 
-.bs-stats summary {
-    cursor: pointer;
-    font-weight: 600;
+.achievement.unlocked {
+    opacity: 1;
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-.bs-stats-body {
-    margin-top: 8px;
+.achievement-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.achievement-body {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
 }
 
-.bs-head {
-    margin-top: 6px;
-    font-weight: 700;
-    color: var(--accent);
+.achievement-body small {
+    color: var(--muted);
 }
 
-.bs-ach {
-    opacity: 0.55;
+.achievement-bar {
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-top: 2px;
 }
 
-.bs-ach.on {
-    opacity: 1;
+.achievement-bar-fill {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
 }

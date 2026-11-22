@@ -130,7 +130,10 @@
         { id: 'boss_slayer', icon: '👾', name: 'Pogromca bossa', desc: 'Pokonaj bossa.' },
         { id: 'boss_all', icon: '🏆', name: 'Łowca bossów', desc: 'Pokonaj wszystkie 3 rodzaje bossów.' },
         { id: 'veteran', icon: '🎖️', name: 'Weteran', desc: 'Dotrzyj do 10. fali.' },
-        { id: 'collector', icon: '🎁', name: 'Kolekcjoner', desc: 'Zbierz łącznie 25 power-upów.' }
+        { id: 'collector', icon: '🎁', name: 'Kolekcjoner', desc: 'Zbierz łącznie 25 power-upów.' },
+        { id: 'perfect_boss', icon: '🛡️', name: 'Perfekcjonista', desc: 'Pokonaj bossa, nie tracąc ani punktu zdrowia w całej fali.' },
+        { id: 'hard_veteran', icon: '💀', name: 'Twardziel', desc: 'Dotrzyj do 10. fali na poziomie Trudnym.' },
+        { id: 'close_call', icon: '😅', name: 'Na krawędzi', desc: 'Ukończ falę z mniej niż 10% zdrowia.' }
     ];
 
     /* ==========================================================================
@@ -1029,6 +1032,7 @@
             unlock('boss_slayer');
             if (e.style && !lifetime.bossStyles.includes(e.style.key)) lifetime.bossStyles.push(e.style.key);
             if (BOSS_STYLES.every((b) => lifetime.bossStyles.includes(b.key))) unlock('boss_all');
+            if (!state.hadDamage) unlock('perfect_boss');
         } else {
             const pts = addScore(e.def.score);
             burst(cx, cy, e.def.color, 16);
@@ -1105,6 +1109,7 @@
 
         lifetime.bestWave = Math.max(lifetime.bestWave, n);
         if (n >= 10) unlock('veteran');
+        if (n >= 10 && state.diff === DIFFICULTIES.hard) unlock('hard_veteran');
         if (n > 1) playSound('wave');
     }
 
@@ -1119,6 +1124,7 @@
     }
 
     function completeWave() {
+        if (state.health > 0 && state.health < state.maxHealth * 0.1) unlock('close_call');
         const bonus = addScore(50 * state.wave, false);
         state.health = Math.min(state.maxHealth, state.health + 8);
         if (!state.hadOverheat) unlock('cool_head');

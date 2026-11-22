@@ -8,9 +8,6 @@
  *  - efekty (plusk, wybuch, wstrząs), kadłuby statków, dźwięk zatopienia, wibracje
  *  - sterowanie klawiaturą (strzałki + Enter) i potwierdzanie strzału na telefonie
  *  - statystyki i osiągnięcia zapisywane w store
- *
- *  Wszystkie nowe elementy interfejsu są dodawane przez skrypt, więc battleship.html
- *  nie wymaga zmian.
  */
 
 const BOARD_SIZE = 10;
@@ -38,7 +35,6 @@ let rulesSelect = null;
 let confirmShotEl = null;
 let playerTracker = null;
 let enemyTracker = null;
-let statsBody = null;
 
 // Klucze zapisu
 const STATS_KEY = 'endixendi:battleship:stats';
@@ -83,7 +79,7 @@ const gameState = {
 const placement = { selected: null, horizontal: true, hover: null, preview: [] };
 
 // Statystyki bieżącej partii
-let gm = { shots: 0, hits: 0 };
+let gm = newGm();
 
 let botTimer = null;
 let aim = null;                 // pole wybrane do potwierdzenia strzału
@@ -158,16 +154,29 @@ if (!stats.bestShots || typeof stats.bestShots !== 'object') stats.bestShots = {
 const achSaved = loadJSON(ACH_KEY, []);
 const unlockedAch = new Set(Array.isArray(achSaved) ? achSaved : []);
 
-const ACHIEVEMENTS = {
-    firstWin:    'Pierwsza wygrana',
-    fast:        'Szybka wojna (wygrana w 45 strzałach lub mniej)',
-    sniper:      'Snajper (celność co najmniej 50%)',
-    untouchable: 'Nietykalny (wygrana bez straty statku)',
-    hard:        'Pogromca Trudnego',
-    cheater:     'Pogromca Cheatera',
-    streak3:     'Seria 3 zwycięstw',
-    salvo:       'Mistrz Salwy'
-};
+const ACHIEVEMENTS = [
+    { id: 'firstWin',    icon: '⚓', name: 'Pierwsza wygrana', desc: 'Wygraj swoją pierwszą grę.' },
+    { id: 'fast',        icon: '⚡', name: 'Szybka wojna',      desc: 'Wygraj w 45 strzałach lub mniej.' },
+    { id: 'sniper',      icon: '🎯', name: 'Snajper',           desc: 'Wygraj z celnością co najmniej 50%.' },
+    { id: 'untouchable', icon: '🛡️', name: 'Nietykalny',        desc: 'Wygraj bez straty żadnego statku.' },
+    { id: 'hard',        icon: '🧠', name: 'Pogromca Trudnego', desc: 'Wygraj na poziomie Trudnym.' },
+    { id: 'cheater',     icon: '😈', name: 'Pogromca Cheatera', desc: 'Wygraj na poziomie Cheater.' },
+    { id: 'salvo',       icon: '💥', name: 'Mistrz Salwy',      desc: 'Wygraj grę w trybie Salwa.' },
+    { id: 'streak3',     icon: '🔥', name: 'Seria zwycięstw',   desc: 'Wygraj 3 gry z rzędu.',
+      goal: 3, hint: 'Najlepsza seria', progress: () => stats.bestStreak },
+    { id: 'wins10',      icon: '🎖️', name: 'Admirał',           desc: 'Wygraj łącznie 10 gier.',
+      goal: 10, hint: 'Wygrane', progress: () => stats.wins },
+    { id: 'hitStreak7',  icon: '🏹', name: 'Pewna ręka',        desc: 'Trafij 7 razy z rzędu w jednej grze.' },
+    { id: 'allLevels',   icon: '🗺️', name: 'Zdobywca poziomów', desc: 'Wygraj na wszystkich czterech poziomach trudności.',
+      goal: DIFFICULTIES.length, hint: 'Poziomy', progress: () => levelsWon() },
+    { id: 'veteran25',   icon: '🌊', name: 'Weteran mórz',      desc: 'Rozegraj 25 gier.',
+      goal: 25, hint: 'Rozegrane gry', progress: () => stats.games }
+];
+const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
+
+function levelsWon() {
+    return DIFFICULTIES.filter(([id]) => stats.byDiff[id] && stats.byDiff[id].w > 0).length;
+}
 
 /* --- OBSŁUGA PEŁNEGO EKRANU --- */
 
@@ -208,6 +217,11 @@ function cellAt(grid, x, y) {
     return grid.children[y * BOARD_SIZE + x];
 }
 
+// Statystyki bieżącej partii (streak = trafienia z rzędu)
+function newGm() {
+    return { shots: 0, hits: 0, streak: 0, bestStreak: 0 };
+}
+
 function isSetupPhase() {
     return !gameState.active && !gameState.over;
 }
@@ -238,7 +252,7 @@ function resetData() {
     gameState.huntDirection = null;
     gameState.playerTurn = true;
     gameState.shotsLeft = 1;
-    gm = { shots: 0, hits: 0 };
+    gm = newGm();
     aim = null;
 
     logContent.classList.remove('mode-cheater');
@@ -643,6 +657,9 @@ function fireAtEnemy(x, y) {
 
     if (isHit) {
         gm.hits++;
+        gm.streak++;
+        gm.bestStreak = Math.max(gm.bestStreak, gm.streak);
+        if (gm.bestStreak >= 7) unlockAch('hitStreak7');
         gameState.computerHits++;
         const sunk = resolveSunk('computer', x, y);
         if (gameState.rules === 'classic') {
@@ -653,6 +670,7 @@ function fireAtEnemy(x, y) {
         if (sunk) log("Zatopiony! Wokół statku nie ma już innych jednostek.", "player");
         playAudio('hit');
     } else {
+        gm.streak = 0;
         log(`Pudło ${coord(x, y)}.`, "info");
         playAudio('splash');
     }
@@ -1063,15 +1081,30 @@ function checkWin() {
 }
 
 function unlockAch(id) {
-    if (unlockedAch.has(id)) return;
+    if (unlockedAch.has(id) || !ACH_BY_ID[id]) return;
     unlockedAch.add(id);
     saveJSON(ACH_KEY, Array.from(unlockedAch));
-    log(`🏆 Osiągnięcie: ${ACHIEVEMENTS[id]}`, "victory");
+    log(`🏆 Osiągnięcie: ${ACH_BY_ID[id].name}`, "victory");
+    renderAchievements();
+}
+
+// Osiągnięcia z postępem odblokowują się od razu, jeśli statystyki już je spełniają
+// (np. wygrane sprzed dodania danego osiągnięcia)
+function syncAchievements() {
+    let changed = false;
+    ACHIEVEMENTS.forEach(a => {
+        if (a.progress && !unlockedAch.has(a.id) && a.progress() >= a.goal) {
+            unlockedAch.add(a.id);
+            changed = true;
+        }
+    });
+    if (changed) saveJSON(ACH_KEY, Array.from(unlockedAch));
 }
 
 function recordGame(playerWon) {
     const d = gameState.difficulty;
     stats.games++;
+    if (stats.games >= 25) unlockAch('veteran25');
     stats.shots += gm.shots;
     stats.hits += gm.hits;
     stats.byDiff[d] = stats.byDiff[d] || { w: 0, l: 0 };
@@ -1092,6 +1125,8 @@ function recordGame(playerWon) {
         if (d === 'hard') unlockAch('hard');
         if (d === 'cheater') unlockAch('cheater');
         if (stats.streak >= 3) unlockAch('streak3');
+        if (stats.wins >= 10) unlockAch('wins10');
+        if (levelsWon() >= DIFFICULTIES.length) unlockAch('allLevels');
         if (gameState.rules === 'salvo') unlockAch('salvo');
     } else {
         stats.losses++;
@@ -1100,7 +1135,7 @@ function recordGame(playerWon) {
     }
 
     saveJSON(STATS_KEY, stats);
-    renderStatsPanel();
+    renderAchievements();
 }
 
 function endGame(playerWon) {
@@ -1148,53 +1183,110 @@ function playAudio(type) {
     }
 }
 
-/* --- PANEL STATYSTYK --- */
+/* --- SEKCJA OSIĄGNIĘĆ (ten sam układ i klasy co w Dino) --- */
 
-function buildStatsPanel() {
-    const host = (logContent.closest && logContent.closest('.game-log-container')) || logContent.parentElement;
-    if (!host) return;
+// Sekcja jest dodawana skryptem: przed "Źródłami dźwięków", a gdy jej nie ma - zaraz pod grą
+function buildAchievementsSection() {
+    const section = document.createElement('section');
+    section.id = 'battleship-achievements';
+    section.className = 'card mt-22';
 
-    const details = document.createElement('details');
-    details.className = 'bs-stats';
-    const summary = document.createElement('summary');
-    summary.textContent = 'Statystyki i osiągnięcia';
-    details.appendChild(summary);
+    const h = document.createElement('h3');
+    h.textContent = 'Osiągnięcia';
+    section.appendChild(h);
 
-    statsBody = document.createElement('div');
-    statsBody.className = 'bs-stats-body';
-    details.appendChild(statsBody);
+    ['achievementsProgress', 'achievementsStats', 'achievementsLevels'].forEach(id => {
+        const p = document.createElement('p');
+        p.className = 'muted';
+        p.id = id;
+        section.appendChild(p);
+    });
 
-    insertAfter(host, details);
-    renderStatsPanel();
+    const ul = document.createElement('ul');
+    ul.id = 'achievementsList';
+    ul.className = 'achievements-list';
+    section.appendChild(ul);
+
+    const credits = document.getElementById('audio-credits');
+    if (credits && credits.parentElement) {
+        credits.parentElement.insertBefore(section, credits);
+    } else {
+        const gameSection = (battleshipContainer.closest && battleshipContainer.closest('section')) || battleshipContainer;
+        insertAfter(gameSection, section);
+    }
+
+    syncAchievements();
+    renderAchievements();
 }
 
-function renderStatsPanel() {
-    if (!statsBody) return;
-    statsBody.innerHTML = '';
+function renderAchievements() {
+    const list = document.getElementById('achievementsList');
+    if (!list) return;
 
-    const line = (text, cls) => {
-        const d = document.createElement('div');
-        d.className = cls || 'bs-line';
-        d.textContent = text;
-        statsBody.appendChild(d);
-    };
+    list.innerHTML = '';
+    ACHIEVEMENTS.forEach(a => {
+        const done = unlockedAch.has(a.id);
+        const li = document.createElement('li');
+        li.className = 'achievement' + (done ? ' unlocked' : '');
 
-    const acc = stats.shots ? Math.round((stats.hits / stats.shots) * 100) : 0;
-    line(`Partie: ${stats.games} • Wygrane: ${stats.wins} • Porażki: ${stats.losses}`);
-    line(`Seria zwycięstw: ${stats.streak} (najlepsza: ${stats.bestStreak}) • Celność ogółem: ${acc}%`);
+        const icon = document.createElement('span');
+        icon.className = 'achievement-icon';
+        icon.textContent = done ? a.icon : '🔒';
 
-    DIFFICULTIES.forEach(([id, name]) => {
-        const d = stats.byDiff[id];
-        if (!d) return;
-        const best = stats.bestShots[id];
-        line(`${name}: ${d.w}W / ${d.l}P${best ? ` • najmniej strzałów: ${best}` : ''}`);
+        const body = document.createElement('span');
+        body.className = 'achievement-body';
+        const name = document.createElement('strong');
+        name.textContent = a.name;
+        const desc = document.createElement('small');
+        desc.textContent = a.desc;
+        body.appendChild(name);
+        body.appendChild(desc);
+
+        // Pasek postępu (tylko osiągnięcia liczone w czasie)
+        if (!done && a.goal && a.progress) {
+            const cur = Math.min(a.goal, a.progress());
+            const pct = Math.round((cur / a.goal) * 100);
+            const bar = document.createElement('span');
+            bar.className = 'achievement-bar';
+            const fill = document.createElement('span');
+            fill.className = 'achievement-bar-fill';
+            fill.style.width = pct + '%';
+            bar.appendChild(fill);
+            const hint = document.createElement('small');
+            hint.textContent = `${a.hint}: ${cur} / ${a.goal}`;
+            body.appendChild(bar);
+            body.appendChild(hint);
+        }
+
+        li.appendChild(icon);
+        li.appendChild(body);
+        list.appendChild(li);
     });
 
-    line('Osiągnięcia', 'bs-head');
-    Object.keys(ACHIEVEMENTS).forEach(id => {
-        line(`${unlockedAch.has(id) ? '🏆' : '🔒'} ${ACHIEVEMENTS[id]}`,
-            unlockedAch.has(id) ? 'bs-line bs-ach on' : 'bs-line bs-ach');
-    });
+    const progress = document.getElementById('achievementsProgress');
+    if (progress) progress.textContent = `Odblokowano: ${unlockedAch.size} / ${ACHIEVEMENTS.length}`;
+
+    const summary = document.getElementById('achievementsStats');
+    if (summary) {
+        const acc = stats.shots ? Math.round((stats.hits / stats.shots) * 100) : 0;
+        summary.textContent =
+            `Rozegrane gry: ${stats.games} • Wygrane: ${stats.wins} • Porażki: ${stats.losses} • ` +
+            `Celność: ${acc}% • Najlepsza seria: ${stats.bestStreak}`;
+    }
+
+    // Wyniki na poszczególnych poziomach (pokazywane dopiero po pierwszej rozegranej grze)
+    const levels = document.getElementById('achievementsLevels');
+    if (levels) {
+        const parts = [];
+        DIFFICULTIES.forEach(([id, label]) => {
+            const d = stats.byDiff[id];
+            if (!d) return;
+            const best = stats.bestShots[id];
+            parts.push(`${label}: ${d.w}W / ${d.l}P${best ? ` (najmniej strzałów: ${best})` : ''}`);
+        });
+        levels.textContent = parts.join(' • ');
+        levels.style.display = parts.length ? '' : 'none';
+    }
 }
 
 /* --- DODATKOWY INTERFEJS (wstrzykiwany skryptem) --- */
@@ -1283,7 +1375,7 @@ function injectUI() {
     turnStatus.setAttribute('aria-live', 'polite');
     computerGrid.setAttribute('tabindex', '0');
 
-    buildStatsPanel();
+    buildAchievementsSection();
 }
 
 /* --- LISTENERY --- */
@@ -1332,18 +1424,42 @@ playerGrid.addEventListener('contextmenu', (e) => {
 computerGrid.addEventListener('click', onEnemyCellClick);
 
 // Sterowanie klawiaturą na planszy wroga
+// Kursor klawiatury jest widoczny tylko wtedy, gdy gracz faktycznie steruje klawiaturą.
+// Mysz i dotyk go ukrywają, a samo kliknięcie planszy go nie pokazuje.
+let kbdActive = false;
+
 function showKbd() {
     document.querySelectorAll('#computer-grid .kbd').forEach(c => c.classList.remove('kbd'));
+    kbdActive = true;
     const el = cellAt(computerGrid, kbd.x, kbd.y);
     if (el) el.classList.add('kbd');
 }
 
 function hideKbd() {
+    kbdActive = false;
     document.querySelectorAll('#computer-grid .kbd').forEach(c => c.classList.remove('kbd'));
 }
 
-computerGrid.addEventListener('focus', showKbd);
+// Fokus od klawisza Tab pokazuje kursor, fokus od kliknięcia myszą lub dotyku - nie
+computerGrid.addEventListener('focus', () => {
+    let fromKeyboard = false;
+    try { fromKeyboard = computerGrid.matches(':focus-visible'); } catch (e) { /* starsza przeglądarka */ }
+    if (fromKeyboard) showKbd();
+});
 computerGrid.addEventListener('blur', hideKbd);
+
+// Mysz / dotyk: schowaj kursor, a klawiatura zacznie od klikniętego pola
+['mousedown', 'touchstart'].forEach(type => {
+    computerGrid.addEventListener(type, (e) => {
+        hideKbd();
+        const cell = e.target.closest ? e.target.closest('.cell') : null;
+        if (cell) {
+            kbd.x = parseInt(cell.dataset.x, 10) || 0;
+            kbd.y = parseInt(cell.dataset.y, 10) || 0;
+        }
+    }, { passive: true });
+});
+
 computerGrid.addEventListener('keydown', (e) => {
     let dx = 0, dy = 0;
     if (e.code === 'ArrowLeft') dx = -1;
@@ -1353,11 +1469,19 @@ computerGrid.addEventListener('keydown', (e) => {
 
     if (dx || dy) {
         e.preventDefault();
-        kbd.x = Math.max(0, Math.min(BOARD_SIZE - 1, kbd.x + dx));
-        kbd.y = Math.max(0, Math.min(BOARD_SIZE - 1, kbd.y + dy));
+        // Pierwsze naciśnięcie tylko pokazuje kursor, kolejne go przesuwają
+        if (kbdActive) {
+            kbd.x = Math.max(0, Math.min(BOARD_SIZE - 1, kbd.x + dx));
+            kbd.y = Math.max(0, Math.min(BOARD_SIZE - 1, kbd.y + dy));
+        }
         showKbd();
     } else if (e.code === 'Enter' || e.code === 'Space') {
         e.preventDefault();
+        // Nie strzelamy w pole, którego gracz nie widzi
+        if (!kbdActive) {
+            showKbd();
+            return;
+        }
         fireAtEnemy(kbd.x, kbd.y);
     }
 });
@@ -1392,7 +1516,7 @@ window.addEventListener('load', () => {
         gameState.active = true;
         gameState.difficulty = difficultySelect.value;
         gameState.rules = rulesSelect.value;
-        gm = { shots: 0, hits: 0 };
+        gm = newGm();
 
         if (gameState.difficulty === 'cheater') {
             logContent.classList.add('mode-cheater');
