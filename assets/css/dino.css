@@ -341,12 +341,3 @@
     background: var(--accent);
     border-radius: 3px;
 }
-
-/* ==========================================================================
-   POPRAWKA: telefon poziomo poza pełnym ekranem - plansza nie wyższa niż okno
-   ========================================================================== */
-@media (orientation: landscape) and (max-height: 560px) {
-    .dino-container:not(.is-fullscreen):not(:fullscreen) .board-container {
-        width: min(100%, calc((100dvh - 90px) * 800 / 350));
-    }
-}

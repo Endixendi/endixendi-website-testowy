@@ -173,7 +173,7 @@
 }
 
 /* Telefon / mały ekran po obróceniu w POZIOM w trybie pełnoekranowym */
-@media (orientation: landscape) and (max-height: 560px), (orientation: landscape) and (max-width: 900px) {
+@media (max-width: 900px) and (orientation: landscape) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
         width: auto;
@@ -249,7 +249,7 @@
 }
 
 /* Duży ekran / PC w poziomie w trybie pełnoekranowym */
-@media (min-width: 901px) and (orientation: landscape) and (min-height: 561px) {
+@media (min-width: 901px) and (orientation: landscape) {
     .shooter-stage.is-fullscreen .shooter-container,
     .shooter-stage:fullscreen .shooter-container {
         width: min(88vw, calc((100dvh - 36px) * (4 / 3)));
@@ -618,29 +618,6 @@
 }
 
 @media (max-width: 480px) {
-    .choice-desc { display: none; }
-    #menu { gap: 6px; padding: 8px 10px; }
-    #menu h2 { display: none; }
-    .choice-group { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .choice { padding: 6px 4px; text-align: center; }
-    .choice-name { font-size: 0.74rem; }
-    .menu-label { font-size: 0.72rem; }
-    .menu-row { gap: 4px; }
-    #menu .btn { padding: 7px 22px; }
-    #gameOverMenu { top: calc(50% + 24px); max-height: calc(100% - 64px); padding: 14px; }
-}
-
-/* ==========================================================================
-   POPRAWKI TELEFON W POZIOMIE (też gdy ekran jest szerszy niż 900 px)
-   ========================================================================== */
-@media (orientation: landscape) and (max-height: 560px) {
-    .shooter-stage:not(.is-fullscreen):not(:fullscreen) .shooter-container {
-        width: min(100%, calc((100dvh - 24px) * 4 / 3));
-    }
-
-    #heatBar, #healthBar { height: 80px; }
-
-    /* kompaktowe menu startowe jak na wąskim ekranie */
     .choice-desc { display: none; }
     #menu { gap: 6px; padding: 8px 10px; }
     #menu h2 { display: none; }

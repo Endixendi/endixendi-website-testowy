@@ -192,7 +192,7 @@
 }
 
 /* PC / duże ekrany w poziomie w trybie pełnoekranowym */
-@media (min-width: 901px) and (orientation: landscape) and (min-height: 561px) {
+@media (min-width: 901px) and (orientation: landscape) {
     .tetris-container.is-fullscreen,
     .tetris-container:fullscreen {
         flex-direction: row;
@@ -207,7 +207,7 @@
 }
 
 /* Telefon / mniejszy ekran po obróceniu w POZIOM w trybie pełnoekranowym */
-@media (orientation: landscape) and (max-height: 560px), (orientation: landscape) and (max-width: 900px) {
+@media (max-width: 900px) and (orientation: landscape) {
     .tetris-container.is-fullscreen,
     .tetris-container:fullscreen {
         flex-direction: row;
@@ -219,10 +219,9 @@
 
     .tetris-container.is-fullscreen #tetrisCanvas,
     .tetris-container:fullscreen #tetrisCanvas {
-        height: min(calc(100dvh - 14px), 76vw);
-        width: auto;
-        aspect-ratio: 1 / 2;
-        max-width: none;
+        height: calc(100dvh - 14px);
+        width: calc((100dvh - 14px) * 0.5);
+        max-width: 38vw;
     }
 
     .tetris-container.is-fullscreen .side-panel,
@@ -367,10 +366,9 @@
 
     .tetris-container.is-fullscreen #tetrisCanvas,
     .tetris-container:fullscreen #tetrisCanvas {
-        height: min(calc(100dvh - 235px), 156vw);
-        width: auto;
-        aspect-ratio: 1 / 2;
-        max-width: none;
+        height: calc(100dvh - 235px);
+        width: calc((100dvh - 235px) * 0.5);
+        max-width: 78vw;
     }
 
     .tetris-container.is-fullscreen .arrow-btn,
@@ -519,25 +517,4 @@
     height: 100%;
     background: var(--accent);
     border-radius: 3px;
-}
-
-/* ==========================================================================
-   POPRAWKI TELEFON (poza pełnym ekranem): plansza zawsze mieści się w oknie
-   ========================================================================== */
-@media (max-width: 680px) {
-    .tetris-container:not(.is-fullscreen):not(:fullscreen) #tetrisCanvas {
-        height: max(320px, min(600px, calc(100dvh - 300px)));
-        width: auto;
-        max-width: 100%;
-        aspect-ratio: 1 / 2;
-    }
-}
-
-@media (orientation: landscape) and (max-height: 560px) {
-    .tetris-container:not(.is-fullscreen):not(:fullscreen) #tetrisCanvas {
-        height: max(260px, calc(100dvh - 40px));
-        width: auto;
-        max-width: 100%;
-        aspect-ratio: 1 / 2;
-    }
 }
