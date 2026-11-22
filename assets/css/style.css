@@ -534,7 +534,7 @@ footer {
 }
 
 /* Kolumna z marką i opisem */
-.footer-brand .brand-name {
+.brand-column .brand-name {
     display: block;
     font-size: 1.5rem;
     font-weight: 800;
@@ -638,7 +638,7 @@ footer {
 
 /* Smartfony i ekrany mobilne */
 @media screen and (max-width: 600px) {
-    .footer-brand .brand-name {
+    .brand-column .brand-name {
         text-align: center;
     }
 
@@ -759,26 +759,6 @@ li {
     font-weight: bold;
 }
 
-.side.left ul {
-    margin: 12px 0;
-    padding-left: 20px;
-    list-style: none;
-}
-
-.side.left li {
-    margin: 8px 0;
-    position: relative;
-    padding-left: 8px;
-}
-
-.side.left li:before {
-    content: "•";
-    position: absolute;
-    left: -12px;
-    color: var(--accent);
-    font-weight: bold;
-}
-
 /* ==========================================================================
    Dedykowane klasy struktur indeksu
    ========================================================================== */
@@ -860,16 +840,6 @@ li {
 .controls-left {
     position: relative;
     z-index: 1;
-}
-
-.controls-left::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    pointer-events: none;
-    z-index: -1;
-    opacity: 0.7;
 }
 
 .ssd-list {
@@ -1157,21 +1127,21 @@ body.theme-green #main-nav a.active {
 }
 
 /* ==========================================================================
-   Stylizacja ujednoliconej listy źródeł audio (Sekcja #controls)
+   Stylizacja ujednoliconej listy źródeł audio (Sekcja #audio-credits)
    ========================================================================== */
 
-#controls ul {
+#audio-credits ul {
     list-style-type: none;
     padding-left: 0;
     margin: 12px 0 0 0;
 }
 
-#controls ul li {
+#audio-credits ul li {
     margin: 6px 0;
     line-height: 1.5;
 }
 
-#controls ul ul {
+#audio-credits ul ul {
     list-style-type: disc;
     list-style-position: outside;
     padding-left: 24px;
@@ -1179,13 +1149,13 @@ body.theme-green #main-nav a.active {
     margin-bottom: 0;
 }
 
-#controls ul ul li {
+#audio-credits ul ul li {
     margin: 4px 0;
     position: relative;
     padding-left: 4px;
 }
 
-#controls ul ul li::marker {
+#audio-credits ul ul li::marker {
     color: var(--accent);
 }
 
@@ -1454,4 +1424,77 @@ body.theme-green #main-nav a.active {
     #menu-placeholder > header {
         position: static;
     }
+}
+/* ==========================================================================
+   POPRAWKI (hover na dotyku, dostępność menu, panele, ruch)
+   ========================================================================== */
+
+/* Karty nie unoszą się na urządzeniach dotykowych (lepki :hover psuł pełny ekran gier w iOS) */
+@media (hover: none) {
+    .card:hover { transform: none; }
+}
+
+/* Karty z grami nie unoszą się w trakcie rozgrywki (transform przesuwałby element fixed w pełnym ekranie) */
+#dino-game:hover,
+#shooter-game:hover,
+#tetris-game:hover,
+.game-wrapper:hover {
+    transform: none;
+}
+
+/* Dropdown: mostek nad szczeliną, żeby menu nie znikało w drodze do linku */
+.dropdown-content::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -8px;
+    height: 8px;
+}
+
+/* Dropdown dostępny z klawiatury */
+.dropdown:focus-within .dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Aktywna zakładka menu (klasa .active ustawiana w script.js, działa z każdym motywem) */
+#main-nav .dropbtn.active,
+#main-nav a.active {
+    color: var(--accent);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* Wideo 16:9 na tabletach: bez sztywnej wysokości */
+@media (max-width: 900px) {
+    .video iframe { height: auto; }
+}
+
+/* Boczne panele skrótów tylko tam, gdzie mieszczą się obok treści (1100 px + 2 x panel) */
+@media (min-width: 1201px) and (max-width: 1449px) {
+    .pc-only { display: none !important; }
+}
+
+/* Mobilny pasek skrótów nie zasłania przycisku "do góry" */
+body:has(.mobile-navigation-bar.is-open) .floating-back-to-top {
+    bottom: 110px;
+}
+
+/* Kolor tekstu na przyciskach z motywu (jasny/ciemny akcent) */
+.btn,
+a.btn {
+    color: var(--on-accent);
+}
+
+/* Ograniczony ruch: wyłącza animacje, przejścia i płynne przewijanie */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+    .seasonal-particle { display: none !important; }
 }

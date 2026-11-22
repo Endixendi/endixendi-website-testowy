@@ -94,6 +94,7 @@ function initGame() {
     resetData();
     randomizeShips(gameState.playerShips);
     renderGrid(playerGrid, gameState.playerShips, true);
+    updateFleetInfo();
     log("Witaj, Kapitanie. Rozmieść flotę i rozpocznij bitwę.", "info");
 }
 
@@ -116,6 +117,7 @@ function resetData() {
     btnRandomize.disabled = false;
     computerGrid.classList.add('locked');
     turnStatus.textContent = "Rozstawianie Floty";
+    turnStatus.style.color = "";
 
     document.querySelectorAll('.cell').forEach(c => c.className = 'cell');
     logContent.innerHTML = '';
@@ -145,23 +147,29 @@ function createGrid(container, owner) {
 /* --- LOGIKA ROZMIESZCZANIA --- */
 
 function randomizeShips(board) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-        board[y].fill(0);
-    }
-
-    SHIPS_CONFIG.forEach(size => {
-        let placed = false;
-        while (!placed) {
-            const horizontal = Math.random() < 0.5;
-            const x = Math.floor(Math.random() * BOARD_SIZE);
-            const y = Math.floor(Math.random() * BOARD_SIZE);
-
-            if (canPlace(board, x, y, size, horizontal)) {
-                place(board, x, y, size, horizontal);
-                placed = true;
-            }
+    for (let attempt = 0; attempt < 500; attempt++) {
+        for (let y = 0; y < BOARD_SIZE; y++) {
+            board[y].fill(0);
         }
-    });
+
+        let allPlaced = true;
+        for (const size of SHIPS_CONFIG) {
+            let placed = false;
+            for (let tries = 0; tries < 200 && !placed; tries++) {
+                const horizontal = Math.random() < 0.5;
+                const x = Math.floor(Math.random() * BOARD_SIZE);
+                const y = Math.floor(Math.random() * BOARD_SIZE);
+
+                if (canPlace(board, x, y, size, horizontal)) {
+                    place(board, x, y, size, horizontal);
+                    placed = true;
+                }
+            }
+            if (!placed) { allPlaced = false; break; }
+        }
+
+        if (allPlaced) return;
+    }
 }
 
 function canPlace(board, x, y, size, horizontal) {
@@ -212,7 +220,10 @@ function handlePlayerShot(e) {
 
     if (isHit) {
         gameState.computerHits++;
+        const sunk = resolveSunk('computer', x, y);
         log(`Trafienie [${x},${y}]! Masz dodatkowy ruch!`, "player");
+        if (sunk) log("Zatopiony! Wokół statku nie ma już innych jednostek.", "player");
+        updateFleetInfo();
         turnStatus.textContent = "TRAFIENIE! STRZELAJ DALEJ";
         playAudio('hit');
         checkWin();
@@ -301,8 +312,16 @@ function botTurn() {
         log(`Wróg trafił [${x},${y}]!`, "enemy");
         playAudio('hit');
 
-        addSmartNeighbors(x, y);
-        gameState.lastHit = { x, y };
+        if (resolveSunk('player', x, y)) {
+            log("Wróg zatopił jeden z Twoich statków!", "enemy");
+            gameState.botQueue = [];
+            gameState.lastHit = null;
+            gameState.huntDirection = null;
+        } else {
+            addSmartNeighbors(x, y);
+            gameState.lastHit = { x, y };
+        }
+        updateFleetInfo();
         checkWin();
         if (gameState.active) {
             setTimeout(botTurn, 1000);
@@ -363,6 +382,96 @@ function isAreaClearForBot(x, y) {
     return true;
 }
 
+/* --- ZATOPIENIA I LICZNIK FLOTY --- */
+
+// Zwraca wszystkie pola statku, do którego należy pole (x, y). Statki nie stykają się, więc
+// wystarczy przejść po sąsiadach w 4 kierunkach (1 = statek, 3 = trafiony segment).
+function shipCells(board, x, y) {
+    const out = [];
+    const seen = new Set();
+    const stack = [{ x, y }];
+
+    while (stack.length) {
+        const c = stack.pop();
+        const key = c.y * BOARD_SIZE + c.x;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const v = board[c.y][c.x];
+        if (v !== 1 && v !== 3) continue;
+        out.push(c);
+
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+            const nx = c.x + dx;
+            const ny = c.y + dy;
+            if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) stack.push({ x: nx, y: ny });
+        });
+    }
+    return out;
+}
+
+// Jeśli trafienie zatopiło statek: oznacza go i wszystkie pola wokół jako pudła. Zwraca true/false.
+function resolveSunk(owner, x, y) {
+    const board = owner === 'computer' ? gameState.computerShips : gameState.playerShips;
+    const grid = owner === 'computer' ? computerGrid : playerGrid;
+    const cells = shipCells(board, x, y);
+
+    if (!cells.length || !cells.every(c => board[c.y][c.x] === 3)) return false;
+
+    cells.forEach(c => {
+        const el = grid.children[c.y * BOARD_SIZE + c.x];
+        if (el) {
+            el.classList.remove('hit');
+            el.classList.add('sunk');
+        }
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const nx = c.x + dx;
+                const ny = c.y + dy;
+                if (nx < 0 || ny < 0 || nx >= BOARD_SIZE || ny >= BOARD_SIZE) continue;
+                if (board[ny][nx] === 0) {
+                    board[ny][nx] = 2;
+                    const neighbor = grid.children[ny * BOARD_SIZE + nx];
+                    if (neighbor) neighbor.classList.add('miss');
+                }
+            }
+        }
+    });
+    return true;
+}
+
+function countAliveShips(board) {
+    const seen = new Set();
+    let alive = 0;
+    for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+            const v = board[y][x];
+            if ((v === 1 || v === 3) && !seen.has(y * BOARD_SIZE + x)) {
+                const cells = shipCells(board, x, y);
+                cells.forEach(c => seen.add(c.y * BOARD_SIZE + c.x));
+                if (cells.some(c => board[c.y][c.x] === 1)) alive++;
+            }
+        }
+    }
+    return alive;
+}
+
+function updateFleetInfo() {
+    const playerInfo = document.getElementById('player-ships-info');
+    const enemyInfo = document.getElementById('enemy-ships-info');
+    const total = SHIPS_CONFIG.length;
+
+    if (playerInfo) {
+        playerInfo.textContent = `Twoja flota: ${countAliveShips(gameState.playerShips)}/${total}`;
+    }
+    if (enemyInfo) {
+        const placed = gameState.computerShips.some(row => row.some(v => v === 1 || v === 3));
+        enemyInfo.textContent = placed
+            ? `Flota wroga: ${countAliveShips(gameState.computerShips)}/${total}`
+            : 'Wróg ukryty';
+    }
+}
+
 /* --- UTILS --- */
 
 function updateVisuals(cell, isHit) {
@@ -397,10 +506,11 @@ function checkWin() {
 function endGame(playerWon) {
     gameState.active = false;
     turnStatus.textContent = playerWon ? "ZWYCIĘSTWO!" : "PORAŻKA";
-    turnStatus.style.color = playerWon ? "var(--accent-2)" : "#ff4d6d";
+    turnStatus.style.color = playerWon ? "var(--accent-2)" : "var(--danger)";
 
     log(playerWon ? "GRATULACJE! Wroga flota zniszczona." : "MAYDAY! Nasza flota poszła na dno.", "victory");
 
+    audio.music.pause();
     if (playerWon) playAudio('win');
     else playAudio('lose');
 
@@ -461,6 +571,7 @@ btnStart.addEventListener('click', () => {
     }
 
     randomizeShips(gameState.computerShips);
+    updateFleetInfo();
     computerGrid.classList.remove('locked');
     difficultySelect.disabled = true;
     btnRandomize.disabled = true;

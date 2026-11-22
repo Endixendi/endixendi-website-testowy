@@ -20,9 +20,11 @@
 }
 
 /* Efekt delikatnego uniesienia całej karty */
+@media (hover: hover) {
 .gallery-item:hover {
     border-color: var(--accent);
     transform: translateY(-5px);
+}
 }
 
 .gallery-item img {
@@ -38,8 +40,10 @@
 }
 
 /* EFEKT ZOOM PO NAJECHANIU */
+@media (hover: hover) {
 .gallery-item:hover img {
     transform: scale(1.1);
+}
 }
 
 .gallery-caption {
@@ -192,4 +196,16 @@
         width: 85px; /* Nieco mniejsze miniaturki na ekranach mobilnych */
         min-width: 85px;
     }
+}
+/* Pozycjonowanie dla obliczeń przewijania miniatur w gallery.js */
+.cinema-thumbnails {
+    position: relative;
+}
+
+/* Widoczny fokus z klawiatury */
+.cinema-arrow:focus-visible,
+.cinema-thumb:focus-visible,
+.gallery-item img:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }

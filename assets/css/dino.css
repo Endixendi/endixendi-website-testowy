@@ -237,3 +237,15 @@
         width: 100%;
     }
 }
+/* Podwójne stuknięcie nie przybliża strony podczas gry (zamiast user-scalable=no) */
+.dino-container {
+    touch-action: manipulation;
+}
+
+/* Pełny ekran na telefonie w poziomie: zostaw miejsce na przyciski SKOK / KUCANIE */
+@media (pointer: coarse) and (orientation: landscape) {
+    .dino-container.is-fullscreen .board-container,
+    .dino-container:fullscreen .board-container {
+        width: min(92vw, calc((100dvh - 110px) * (800 / 350)));
+    }
+}

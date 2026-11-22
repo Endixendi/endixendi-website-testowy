@@ -197,3 +197,12 @@
 .text-justify { text-align: justify; }
 .color-accent-2 { color: var(--accent-2); }
 
+
+/* Wyjustowany tekst: dzielenie wyrazów, a na wąskich ekranach wyrównanie do lewej */
+.text-justify {
+    hyphens: auto;
+}
+
+@media (max-width: 600px) {
+    .text-justify { text-align: left; }
+}

@@ -46,11 +46,14 @@ if (!canvas) {
         bg: new Audio("assets/sounds/shooter/shooter-bg.mp3"),
         gameover: new Audio("assets/sounds/global/gameover-sad.mp3"),
         playerShoot: new Audio("assets/sounds/global/laser.mp3"),
-        enemyShoot: new Audio("assets/sounds/global/laser.mp3"),
         explosion: new Audio("assets/sounds/global/explosion.mp3"),
         hit: new Audio("assets/sounds/global/hit.mp3"),
         overheat: new Audio("assets/sounds/global/point.mp3")
     };
+
+    const HIGHSCORE_KEY = 'endixendi:shooter:highscore';
+    let shooterHighScore = parseInt(store.get(HIGHSCORE_KEY), 10) || 0;
+    const finalHighScoreEl = document.getElementById("finalHighScore");
 
     const gameState = {
         player: null,
@@ -105,9 +108,11 @@ if (!canvas) {
             targetWidth = targetHeight * aspect;
         }
 
-        scale = targetWidth / V_WIDTH;
-        canvas.width = Math.floor(targetWidth);
-        canvas.height = Math.floor(targetHeight);
+        // Ostry obraz na ekranach HiDPI (rozmiar CSS ustala stylesheet)
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        scale = (targetWidth * dpr) / V_WIDTH;
+        canvas.width = Math.floor(targetWidth * dpr);
+        canvas.height = Math.floor(targetHeight * dpr);
     }
 
     function updateFullscreenUI() {
@@ -141,8 +146,8 @@ if (!canvas) {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
         update(dt) {
-            if (gameState.keys["ArrowLeft"]) this.x = Math.max(0, this.x - this.speed * dt);
-            if (gameState.keys["ArrowRight"]) this.x = Math.min(V_WIDTH - this.width, this.x + this.speed * dt);
+            if (gameState.keys["ArrowLeft"] || gameState.keys["a"] || gameState.keys["A"]) this.x = Math.max(0, this.x - this.speed * dt);
+            if (gameState.keys["ArrowRight"] || gameState.keys["d"] || gameState.keys["D"]) this.x = Math.min(V_WIDTH - this.width, this.x + this.speed * dt);
         }
     }
 
@@ -292,7 +297,12 @@ if (!canvas) {
             gameState.rafId = null;
         }
         updateHUD();
+        if (gameState.score > shooterHighScore) {
+            shooterHighScore = gameState.score;
+            store.set(HIGHSCORE_KEY, shooterHighScore);
+        }
         if (finalScoreEl) finalScoreEl.textContent = gameState.score;
+        if (finalHighScoreEl) finalHighScoreEl.textContent = shooterHighScore;
         if (gameOverMenu) gameOverMenu.classList.remove("hidden");
         sounds.bg.pause();
         sounds.gameover.currentTime = 0;
@@ -359,7 +369,7 @@ if (!canvas) {
         });
 
         gameState.enemies.forEach(e => {
-            if (gameState.gameOver) return;
+            if (gameState.gameOver || e.toRemove) return;
             e.update(dt);
             if (detectCollision(e, gameState.player)) {
                 e.toRemove = true;
@@ -410,11 +420,28 @@ if (!canvas) {
                 shooterStage.classList.remove("is-fullscreen");
                 updateFullscreenUI();
             }
+            // Nie przechwytuj klawiszy w polach formularza (suwaki głośności używają strzałek)
+            if (e.target.closest && e.target.closest('input, select, textarea')) return;
             gameState.keys[e.key] = true;
-            if ([" ", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+            const playing = gameState.player && !gameState.gameOver;
+            if (playing && [" ", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
         });
         window.addEventListener("keyup", (e) => {
             gameState.keys[e.key] = false;
+        });
+
+        // Po utracie fokusu okna nie zostawiaj "przyklejonych" klawiszy
+        window.addEventListener("blur", () => {
+            gameState.keys = {};
+        });
+
+        // Muzyka nie gra w tle, gdy karta jest ukryta
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                sounds.bg.pause();
+            } else if (gameState.player && !gameState.gameOver) {
+                sounds.bg.play().catch(() => {});
+            }
         });
 
         if (volumeControl) {

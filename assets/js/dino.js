@@ -33,6 +33,12 @@ const effectSounds = [jumpSound, gameOverSound, milestoneSound, point1000Sound, 
 
 bgMusic.loop = true;
 
+// Głośność startowa zgodna z suwakami w HTML
+bgMusic.volume = volumeControl ? parseFloat(volumeControl.value) : 0.3;
+effectSounds.forEach(snd => {
+    snd.volume = volumeControl1 ? parseFloat(volumeControl1.value) : 0.3;
+});
+
 // Stan gry
 let player = null;
 let obstacles = [];
@@ -48,7 +54,7 @@ let lastTime = 0;
 let spawnTimer = 0;
 let itemSpawnTimer = 0;
 let scoreTimer = 0;
-let highScore = parseInt(localStorage.getItem("highScore")) || 0;
+let highScore = parseInt(store.get("highScore"), 10) || 0;
 highScoreEl.textContent = highScore;
 
 // System tarczy (ładowanej kryształami)
@@ -92,9 +98,11 @@ function resizeCanvas() {
         targetWidth = targetHeight * aspect;
     }
 
-    scale = targetWidth / V_WIDTH;
-    canvas.width = Math.floor(targetWidth);
-    canvas.height = Math.floor(targetHeight);
+    // Ostry obraz na ekranach HiDPI (rozmiar CSS ustala stylesheet, tu tylko rozdzielczość płótna)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    scale = (targetWidth * dpr) / V_WIDTH;
+    canvas.width = Math.floor(targetWidth * dpr);
+    canvas.height = Math.floor(targetHeight * dpr);
 }
 
 function updateFullscreenState() {
@@ -118,8 +126,16 @@ function toggleFullscreen() {
     GameFullscreen.toggle(dinoContainer, updateFullscreenState);
 }
 
+// Kolor akcentu jest buforowany, odświeża się tylko po zmianie motywu (klasy body)
+let accentCache = null;
+new MutationObserver(() => { accentCache = null; })
+    .observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
 function getAccentColor(fallback) {
-    return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || fallback;
+    if (!accentCache) {
+        accentCache = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    }
+    return accentCache || fallback;
 }
 
 // --- KLASY I OBIEKTY ---
@@ -230,7 +246,7 @@ class Obstacle {
         this.x -= gameSpeed * dt;
         if (this.type === 'drone') {
             this.hoverTime += dt * 5;
-            this.y += Math.sin(this.hoverTime) * 0.4;
+            this.y += Math.sin(this.hoverTime) * 24 * dt; // niezależne od liczby klatek
         }
     }
 
@@ -593,7 +609,7 @@ function animate(timestamp) {
     scoreTimer += dt;
     if (scoreTimer >= 0.05) {
         score += 5;
-        scoreTimer = 0;
+        scoreTimer -= 0.05;
         scoreEl.textContent = score;
 
         if (score > 0 && score % 1000 === 0) {
@@ -620,7 +636,7 @@ function endGame() {
 
     if (score > highScore) {
         highScore = score;
-        localStorage.setItem("highScore", highScore);
+        store.set("highScore", highScore);
         highScoreEl.textContent = highScore;
     }
 
@@ -666,20 +682,37 @@ window.addEventListener("load", () => {
             dinoContainer.classList.remove('is-fullscreen');
             updateFullscreenState();
         }
+        // Nie przechwytuj klawiszy w polach formularza (suwaki głośności używają strzałek)
+        if (e.target.closest && e.target.closest('input, select, textarea')) return;
+        const playing = Boolean(player) && !gameOver;
+
         if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
-            e.preventDefault();
+            if (playing) e.preventDefault();
             keys[e.code] = true;
-            if (!gameOver && player) player.jump();
+            if (playing) player.jump();
         }
         if (e.code === "ArrowDown" || e.code === "KeyS") {
-            e.preventDefault();
+            if (playing) e.preventDefault();
             keys[e.code] = true;
+        }
+    });
+
+    // Po utracie fokusu okna nie zostawiaj "przyklejonych" klawiszy
+    window.addEventListener("blur", () => {
+        Object.keys(keys).forEach(k => { keys[k] = false; });
+    });
+
+    // Muzyka nie gra w tle, gdy karta jest ukryta
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            bgMusic.pause();
+        } else if (player && !gameOver) {
+            bgMusic.play().catch(() => {});
         }
     });
 
     window.addEventListener("keyup", e => {
         if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "KeyS" || e.code === "KeyW") {
-            e.preventDefault();
             keys[e.code] = false;
         }
     });

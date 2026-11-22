@@ -10,8 +10,8 @@
 
     function isActive(container) {
         return Boolean(
-            document.fullscreenElement ||
-            document.webkitFullscreenElement ||
+            document.fullscreenElement === container ||
+            document.webkitFullscreenElement === container ||
             (container && container.classList.contains(FS_CLASS))
         );
     }
@@ -19,6 +19,11 @@
     function toggle(container, onChange) {
         if (!container) return;
         const notify = typeof onChange === 'function' ? onChange : () => {};
+
+        // Zdejmij fokus z przycisku, żeby Spacja/Enter w grze nie przełączały pełnego ekranu
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
 
         if (isActive(container)) {
             if (document.fullscreenElement) {

@@ -2,15 +2,17 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dino Game: darmowa gra zręcznościowa w przeglądarce. Skacz, kucaj i bij rekordy na PC i telefonie.">
     <title>Endixendi - Dino</title>
 
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/games.css">
     <link rel="stylesheet" href="assets/css/dino.css">
     <link rel="icon" href="assets/images/logo-kolo.png" type="image/png">
+    <noscript><style>#loader { display: none; }</style></noscript>
 </head>
-<body>
+<body id="top">
 
     <div id="loader">
         <img src="assets/images/logo-kolo.png" alt="Loading..." class="loader-logo">
@@ -90,7 +92,7 @@
 		
 		</section>
 		
-		<section id="controls" class="card mt-16">
+		<section id="audio-credits" class="card mt-16">
 			<div>
 				<h3>Źródła dźwięków i muzyki:</h3>
 				<ul>
@@ -111,6 +113,8 @@
     </main>
 
     <div id="footer-placeholder"></div>
+
+    <script src="assets/js/storage.js"></script>
 
     <script src="assets/js/script.js"></script>
     <script src="assets/js/fullscreen.js"></script>

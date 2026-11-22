@@ -112,8 +112,8 @@
 
 .battleship-grid {
     display: grid;
-    grid-template-columns: repeat(10, 32px); 
-    grid-template-rows: repeat(10, 32px);
+    grid-template-columns: repeat(10, var(--cell, 32px)); 
+    grid-template-rows: repeat(10, var(--cell, 32px));
     gap: 2px;
     background: rgba(0, 0, 0, 0.3);
     padding: 5px;
@@ -131,8 +131,8 @@
 
 /* Komórka planszy */
 .cell {
-    width: 32px;
-    height: 32px;
+    width: var(--cell, 32px);
+    height: var(--cell, 32px);
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.03);
     cursor: crosshair;
@@ -175,9 +175,9 @@
     border-radius: 50%;
 }
 
-.cell.hit {
-    background: color-mix(in srgb, var(--danger) 15%, transparent) !important;
-    border-color: var(--danger) !important;
+.battleship-grid .cell.hit {
+    background: color-mix(in srgb, var(--danger) 15%, transparent);
+    border-color: var(--danger);
     box-shadow: inset 0 0 15px color-mix(in srgb, var(--danger) 40%, transparent);
     animation: flashHit 0.3s ease-out;
 }
@@ -197,9 +197,9 @@
     color: var(--danger);
 }
 
-.cell.sunk {
-    background: var(--danger) !important;
-    border-color: var(--danger) !important;
+.battleship-grid .cell.sunk {
+    background: var(--danger);
+    border-color: var(--danger);
     box-shadow: 0 0 15px color-mix(in srgb, var(--danger) 60%, transparent);
 }
 
@@ -409,13 +409,7 @@
     }
     
     .battleship-grid {
-        grid-template-columns: repeat(10, 26px);
-        grid-template-rows: repeat(10, 26px);
-    }
-    
-    .cell {
-        width: 26px;
-        height: 26px;
+        --cell: min(26px, calc((100vw - 100px) / 10));
     }
     
     .boards-container {
@@ -425,4 +419,8 @@
     .audio-settings {
         width: 100%;
     }
+}
+/* Własna plansza nie jest klikalna */
+.player-grid .cell {
+    cursor: default;
 }

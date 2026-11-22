@@ -16,14 +16,20 @@ const fullscreenBtn = document.getElementById('tetrisFullscreenBtn');
 const scoreEl = document.getElementById('score');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
+const highScoreEl = document.getElementById('highScore');
+const HIGHSCORE_KEY = 'endixendi:tetris:highscore';
+let highScore = parseInt(store.get(HIGHSCORE_KEY), 10) || 0;
+if (highScoreEl) highScoreEl.textContent = highScore;
 const tetrisMenu = document.getElementById('tetris-menu');
 const menuTitle = document.getElementById('menu-title');
 const menuInstruction = document.getElementById('menu-instruction');
 
-// Ustawienia wielkości fizycznej kanwy głównej
+// Rozdzielczość fizyczna kanwy (większa niż rozmiar CSS 300x600, żeby obraz był ostry
+// także w trybie pełnoekranowym i na ekranach HiDPI)
+const DPR = Math.max(2, Math.min(window.devicePixelRatio || 1, 3));
 if (board) {
-    board.width = 300;
-    board.height = 600;
+    board.width = 300 * DPR;
+    board.height = 600 * DPR;
 }
 
 // Ustawienia gry
@@ -62,7 +68,8 @@ const sounds = {
 
 // Konfiguracja audio
 sounds.music.loop = true;
-sounds.music.volume = 0.15;
+const musicSliderInit = document.getElementById('volume-music');
+sounds.music.volume = musicSliderInit ? parseFloat(musicSliderInit.value) : 0.3;
 
 sounds.line.volume = 0.3;
 sounds.levelup.volume = 0.3;
@@ -109,8 +116,9 @@ function toggleFullscreen() {
 
 function draw() {
     if (!ctx || !board) return;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#0f1113';
-    ctx.fillRect(0, 0, board.width, board.height);
+    ctx.fillRect(0, 0, 300, 600);
 
     drawMatrix(ARENA, { x: 0, y: 0 }, false, '');
 
@@ -230,8 +238,8 @@ function playerDrop() {
         sounds.drop.currentTime = 0;
         sounds.drop.play().catch(() => {});
 
-        playerReset();
         arenaSweep();
+        playerReset();
         updateStats();
     }
     dropCounter = 0;
@@ -248,8 +256,8 @@ function hardDrop() {
     sounds.drop.currentTime = 0;
     sounds.drop.play().catch(() => {});
 
-    playerReset();
     arenaSweep();
+    playerReset();
     updateStats();
 }
 
@@ -391,6 +399,12 @@ function gameStart() {
 function gameEnd() {
     running = false;
     gameOver = true;
+
+    if (score > highScore) {
+        highScore = score;
+        store.set(HIGHSCORE_KEY, highScore);
+        if (highScoreEl) highScoreEl.textContent = highScore;
+    }
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
@@ -453,7 +467,10 @@ window.addEventListener('keydown', e => {
         updateFullscreenUI();
     }
 
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
+    // Nie przechwytuj klawiszy w polach formularza (suwaki głośności używają strzałek)
+    if (e.target.closest && e.target.closest('input, select, textarea')) return;
+
+    if (running && !gameOver && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
         e.preventDefault();
     }
 
@@ -543,6 +560,46 @@ document.querySelectorAll(".tetris-mobile-controls button").forEach(btn => {
         }
         draw();
     });
+});
+
+// Auto-powtarzanie przy przytrzymaniu strzałek na ekranie dotykowym
+(function () {
+    const box = document.querySelector('.tetris-mobile-controls');
+    if (!box) return;
+    const repeatIds = ['btn-left', 'btn-right', 'btn-down'];
+    let delayTimer = null;
+    let repeatTimer = null;
+
+    const stop = () => {
+        clearTimeout(delayTimer);
+        clearInterval(repeatTimer);
+        delayTimer = repeatTimer = null;
+    };
+
+    // Prawdziwy klik myszą/dotykiem jest zastąpiony serią kliknięć z pointerdown
+    box.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (btn && repeatIds.includes(btn.id) && e.isTrusted && e.detail > 0) e.stopPropagation();
+    }, true);
+
+    box.addEventListener('pointerdown', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn || !repeatIds.includes(btn.id)) return;
+        e.preventDefault();
+        stop();
+        btn.click();
+        delayTimer = setTimeout(() => {
+            repeatTimer = setInterval(() => btn.click(), 90);
+        }, 250);
+    });
+
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => box.addEventListener(type, stop));
+    window.addEventListener('blur', stop);
+})();
+
+// Automatyczna pauza po przełączeniu karty
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && running && !paused && !gameOver) togglePause();
 });
 
 const musicVolumeSlider = document.getElementById('volume-music');

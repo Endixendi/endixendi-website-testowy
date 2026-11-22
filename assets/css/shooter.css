@@ -402,3 +402,8 @@
         height: 48px;
     }
 }
+/* Wynik wyśrodkowany jawnie (wcześniej tylko przypadkiem przez flex rodzica) */
+#score {
+    left: 50%;
+    transform: translateX(-50%);
+}
