@@ -35,6 +35,7 @@
         <section id="shooter-game" class="card mt-22">
             <div class="shooter-stage" id="shooterStage">
                 <div class="shooter-container">
+                    <button id="pauseBtn" class="fullscreen-btn pause-btn" title="Pauza" aria-label="Pauza" disabled>⏸</button>
                     <button id="fullscreenBtn" class="fullscreen-btn" title="Pełny ekran" aria-label="Pełny ekran">⛶</button>
                     <canvas id="gameCanvas"></canvas>
 
@@ -47,14 +48,40 @@
                     <div id="healthBar"><div id="healthFill"></div></div>
 
                     <div class="overlay" id="menu">
+                        <h2>Shooter</h2>
+
+                        <div class="menu-row">
+                            <span class="menu-label" id="difficultyLabel">Poziom trudności</span>
+                            <div class="choice-group" id="difficultyChoices" role="radiogroup" aria-labelledby="difficultyLabel">
+                                <button type="button" class="choice" role="radio" aria-checked="false" data-value="easy"><span class="choice-name">Łatwy</span><span class="choice-desc">Więcej czasu, mniej obrażeń</span></button>
+                                <button type="button" class="choice" role="radio" aria-checked="false" data-value="normal"><span class="choice-name">Normalny</span><span class="choice-desc">Wersja podstawowa</span></button>
+                                <button type="button" class="choice" role="radio" aria-checked="false" data-value="hard"><span class="choice-name">Trudny</span><span class="choice-desc">Szybsi wrogowie, x1.5 punktów</span></button>
+                            </div>
+                        </div>
+
+                        <div class="menu-row">
+                            <span class="menu-label" id="shipLabel">Statek</span>
+                            <div class="choice-group" id="shipChoices" role="radiogroup" aria-labelledby="shipLabel">
+                                <button type="button" class="choice" role="radio" aria-checked="false" data-value="balanced"><span class="choice-name">Zbalansowany</span><span class="choice-desc">Prędkość i pancerz w równowadze</span></button>
+                                <button type="button" class="choice" role="radio" aria-checked="false" data-value="agile"><span class="choice-name">Zwinny</span><span class="choice-desc">Szybki, mało życia</span></button>
+                                <button type="button" class="choice" role="radio" aria-checked="false" data-value="heavy"><span class="choice-name">Ciężki</span><span class="choice-desc">Wolny, dużo życia, chłodniejsza broń</span></button>
+                            </div>
+                        </div>
+
                         <button id="startBtn" class="btn">Start</button>
                     </div>
+
+                    <div id="achievementToast" class="achievement-toast" role="status" aria-live="polite"></div>
 
                     <div id="gameOverMenu" class="hidden">
                         <h2>Game Over</h2>
                         <p>Wynik: <span id="finalScore">0</span></p>
                         <p>Rekord: <span id="finalHighScore">0</span></p>
-                        <button id="restartBtn" class="btn">Zagraj ponownie</button>
+                        <div id="gameSummary" class="game-summary"></div>
+                        <div class="menu-actions">
+                            <button id="restartBtn" class="btn">Zagraj ponownie</button>
+                            <button id="menuBtn" class="ghost" type="button">Zmień ustawienia</button>
+                        </div>
                     </div>
                 </div>
               
@@ -77,8 +104,12 @@
                 <div class="controls-left">
                     <h3>Sterowanie i Interfejs</h3>
                     <ul>
-                        <li><strong>← / →</strong> – Przesuń statek</li>
+                        <li><strong>← / →</strong> lub <strong>A / D</strong> – Przesuń statek</li>
                         <li><strong>Spacja</strong> – Strzał (Uwaga na przegrzanie!)</li>
+                        <li><strong>P</strong> lub przycisk ⏸ – Pauza</li>
+                        <li><strong>Combo</strong> – Kolejne trafienia w ciągu 3 sekund podnoszą mnożnik punktów (do x5). Obrażenia zerują serię.</li>
+                        <li><strong>Power-upy</strong> (wypadają z wrogów) – 🧊 chłodzenie broni, 🛡️ tarcza na jedno trafienie, 🔱 strzał potrójny (8 s, szybciej grzeje), ❤️ naprawa +25.</li>
+                        <li><strong>Co 5. fala</strong> – Boss. Są trzy rodzaje (Kruszyciel, Wir i Łowca), a każdy kolejny jest trudniejszy. Po ukończeniu każdej fali dostajesz premię i trochę zdrowia.</li>
                         <li><strong>Lewy pasek (pionowy)</strong> – Temperatura działa. Jeśli zapełni się na czerwono, nastąpi blokada broni na 5 sekund!</li>
                         <li><strong>Prawy pasek (pionowy)</strong> – Poziom zdrowia Twojego statku.</li>
                     </ul>
@@ -98,6 +129,25 @@
             </div>
         </section>
 		
+        <section id="shooter-options" class="card mt-22">
+            <h3>Ustawienia gry</h3>
+            <div class="options-grid mt-16">
+                <label class="option-check"><input type="checkbox" id="optShake"> Wstrząsy ekranu</label>
+                <label class="option-check"><input type="checkbox" id="optMouse"> Sterowanie myszką (ruch i strzał kliknięciem)</label>
+                <div class="volume-control">
+                    <label for="optTouchSens">Czułość sterowania dotykowego</label>
+                    <input id="optTouchSens" type="range" min="0.5" max="1.5" step="0.05" value="1">
+                </div>
+                <button type="button" id="resetProgressBtn" class="ghost">Wyzeruj rekord i osiągnięcia</button>
+            </div>
+        </section>
+
+        <section id="shooter-achievements" class="card mt-22">
+            <h3>Osiągnięcia</h3>
+            <p class="muted" id="achievementsProgress"></p>
+            <ul id="achievementsList" class="achievements-list"></ul>
+        </section>
+
 		<section id="audio-credits" class="card mt-16">
 			<div>
 				<h3>Źródła dźwięków i muzyki:</h3>
@@ -110,6 +160,8 @@
 							<li>Eksplozja: Explosion 9 | u_b32baquv5u (pixabay.com)</li>
 							<li>Trafienie: UI Designed Hit | RescopicSound (pixabay.com)</li>
 							<li>Przegrzanie: Level Up 05 | Universfield (pixabay.com)</li>
+							<li>Power-up: Victory | Surn_Thing (pixabay.com)</li>
+							<li>Nowa fala: Arcade UI 14 | floraphonic (pixabay.com)</li>
 						</ul>
 					</li>
 				</ul>

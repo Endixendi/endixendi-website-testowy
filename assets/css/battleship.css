@@ -424,3 +424,262 @@
 .player-grid .cell {
     cursor: default;
 }
+
+/* ==========================================================================
+   NOWE ELEMENTY: osie, lista floty, rozstawianie, kadłuby, efekty, statystyki
+   ========================================================================== */
+
+/* Osie A-J / 1-10 (litery i cyfry są wewnątrz komórek pierwszego rzędu i kolumny) */
+.board-box .battleship-grid {
+    margin-top: 16px;
+    margin-left: 16px;
+}
+
+.cell .axis {
+    position: absolute;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--muted);
+    pointer-events: none;
+    line-height: 1;
+}
+
+.cell .axis-x {
+    top: -15px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.cell .axis-y {
+    left: -17px;
+    width: 12px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Lista floty (ikony statków) */
+.fleet-tracker {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 8px;
+    max-width: 100%;
+    margin: 0 0 4px;
+}
+
+.fleet-chip {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px 5px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--glass);
+    cursor: default;
+    position: relative;
+    font: inherit;
+    color: inherit;
+}
+
+.fleet-chip .seg {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+.fleet-chip.sunk {
+    opacity: 0.5;
+    border-color: var(--danger);
+}
+
+.fleet-chip.sunk .seg {
+    background: var(--danger);
+}
+
+.fleet-chip.sunk::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    top: 50%;
+    height: 2px;
+    background: #fff;
+    transform: rotate(-8deg);
+}
+
+.fleet-chip.placed {
+    opacity: 0.3;
+}
+
+.fleet-chip.selectable {
+    cursor: pointer;
+}
+
+.fleet-chip.selectable:hover {
+    border-color: var(--accent);
+}
+
+.fleet-chip.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* Rozstawianie floty */
+.player-grid.placing .cell {
+    cursor: pointer;
+}
+
+.player-grid .cell.preview-ok {
+    background: color-mix(in srgb, var(--accent) 35%, transparent);
+    border-color: var(--accent);
+}
+
+.player-grid .cell.preview-bad {
+    background: color-mix(in srgb, var(--danger) 30%, transparent);
+    border-color: var(--danger);
+}
+
+/* Kadłuby: zaokrąglone tylko końce statku (n-l/n-r/n-t/n-b = sąsiedni segment po danej stronie) */
+.battleship-grid .cell.ship,
+.battleship-grid .cell.hit,
+.battleship-grid .cell.sunk {
+    border-radius: 9px;
+}
+
+.battleship-grid .cell.n-l { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.battleship-grid .cell.n-r { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.battleship-grid .cell.n-t { border-top-left-radius: 0; border-top-right-radius: 0; }
+.battleship-grid .cell.n-b { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+/* Ujawnione statki wroga po zakończeniu gry */
+#computer-grid .cell.ship {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Celowanie (potwierdzenie strzału) i kursor klawiatury */
+#computer-grid .cell.aim {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+#computer-grid .cell.kbd {
+    outline: 2px dashed var(--accent);
+    outline-offset: -2px;
+}
+
+#computer-grid:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* Efekty: plusk, wybuch, wstrząs planszy */
+.cell .fx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.cell .fx-miss {
+    border: 2px solid rgba(120, 180, 255, 0.85);
+    border-radius: 50%;
+    animation: bsRipple 0.65s ease-out forwards;
+}
+
+.cell .fx-hit {
+    background: radial-gradient(circle, #fff 0%, #ffb000 35%, #ff3b3b 60%, transparent 72%);
+    animation: bsBoom 0.5s ease-out forwards;
+}
+
+.cell .fx-sunk {
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(255, 80, 80, 0.5) 55%, transparent 70%);
+    animation: bsBoom 0.7s ease-out forwards;
+}
+
+@keyframes bsRipple {
+    from { transform: scale(0.2); opacity: 1; }
+    to { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes bsBoom {
+    from { transform: scale(0.3); opacity: 1; }
+    to { transform: scale(2); opacity: 0; }
+}
+
+.battleship-grid.shake {
+    animation: bsShake 0.45s ease-in-out;
+}
+
+@keyframes bsShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-4px, 2px); }
+    40% { transform: translate(4px, -2px); }
+    60% { transform: translate(-3px, -2px); }
+    80% { transform: translate(3px, 2px); }
+}
+
+/* Dodatkowe kontrolki w pasku sterowania */
+.bs-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.bs-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#btn-start:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Panel statystyk */
+.bs-stats {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--glass);
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.bs-stats summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.bs-stats-body {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bs-head {
+    margin-top: 6px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.bs-ach {
+    opacity: 0.55;
+}
+
+.bs-ach.on {
+    opacity: 1;
+}

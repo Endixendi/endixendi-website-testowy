@@ -1,9 +1,23 @@
 /**
- * Statki (Battleship)
+ * Statki (Battleship) - rozszerzona wersja
+ *
+ *  - ręczne rozstawianie floty (klik: postaw / przenieś, R lub PPM: obrót) + losowanie
+ *  - poziomy: Łatwy, Normalny (szachownica), Trudny (mapa prawdopodobieństwa, bez oszustw), Cheater
+ *  - zasady: Klasyczne (strzał po trafieniu), Bez dodatkowego ruchu, Salwa
+ *  - osie A-J / 1-10, współrzędne w logu (np. D8), lista floty z ikonami
+ *  - efekty (plusk, wybuch, wstrząs), kadłuby statków, dźwięk zatopienia, wibracje
+ *  - sterowanie klawiaturą (strzałki + Enter) i potwierdzanie strzału na telefonie
+ *  - statystyki i osiągnięcia zapisywane w store
+ *
+ *  Wszystkie nowe elementy interfejsu są dodawane przez skrypt, więc battleship.html
+ *  nie wymaga zmian.
  */
 
 const BOARD_SIZE = 10;
 const SHIPS_CONFIG = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
+const COL_LABELS = 'ABCDEFGHIJ';
+
+const coord = (x, y) => `${COL_LABELS[x]}${y + 1}`;
 
 // Elementy DOM
 const battleshipContainer = document.getElementById('battleshipContainer');
@@ -17,20 +31,63 @@ const logContent = document.getElementById('game-log');
 const turnStatus = document.getElementById('turn-status');
 const difficultySelect = document.getElementById('difficulty-select');
 
+// Elementy dodawane przez skrypt
+let btnRotate = null;
+let btnClear = null;
+let rulesSelect = null;
+let confirmShotEl = null;
+let playerTracker = null;
+let enemyTracker = null;
+let statsBody = null;
+
+// Klucze zapisu
+const STATS_KEY = 'endixendi:battleship:stats';
+const ACH_KEY = 'endixendi:battleship:ach';
+const DIFF_KEY = 'endixendi:battleship:difficulty';
+const RULES_KEY = 'endixendi:battleship:rules';
+const CONFIRM_KEY = 'endixendi:battleship:confirm';
+
+const DIFFICULTIES = [
+    ['easy', 'Łatwy'],
+    ['medium', 'Normalny'],
+    ['hard', 'Trudny'],
+    ['cheater', 'Cheater']
+];
+const DIFF_NAMES = Object.fromEntries(DIFFICULTIES);
+
+const RULES = [
+    ['classic', 'Klasyczne (trafienie = kolejny strzał)'],
+    ['noextra', 'Bez dodatkowego ruchu'],
+    ['salvo', 'Salwa (tyle strzałów, ile statków)']
+];
+
 // Stan Gry
 const gameState = {
     active: false,
+    over: false,
     playerTurn: true,
     playerShips: [],
     computerShips: [],
-    playerHits: 0,
-    computerHits: 0,
+    playerHits: 0,      // trafienia komputera w naszą flotę
+    computerHits: 0,    // nasze trafienia we flotę komputera
     totalSegments: SHIPS_CONFIG.reduce((a, b) => a + b, 0),
     botQueue: [],
     lastHit: null,
     huntDirection: null,
-    difficulty: 'easy'
+    difficulty: 'easy',
+    rules: 'classic',
+    shotsLeft: 1
 };
+
+// Rozstawianie floty
+const placement = { selected: null, horizontal: true, hover: null, preview: [] };
+
+// Statystyki bieżącej partii
+let gm = { shots: 0, hits: 0 };
+
+let botTimer = null;
+let aim = null;                 // pole wybrane do potwierdzenia strzału
+const kbd = { x: 0, y: 0 };     // kursor klawiatury na planszy wroga
 
 // Dźwięki
 const audio = {
@@ -38,36 +95,79 @@ const audio = {
     hit: new Audio("assets/sounds/global/hit.mp3"),
     splash: new Audio("assets/sounds/global/drop.mp3"),
     win: new Audio("assets/sounds/global/success.mp3"),
-    lose: new Audio("assets/sounds/global/gameover-sad.mp3")
+    lose: new Audio("assets/sounds/global/gameover-sad.mp3"),
+    sunk: new Audio("assets/sounds/global/explosion.mp3")
 };
+const EFFECT_KEYS = ['hit', 'splash', 'win', 'lose', 'sunk'];
 
-// Głośność
 // Głośność startowa pochodzi z suwaków w battleship.html (atrybut value)
-const initMusicVol = document.getElementById('volume-music');
-const initEffectsVol = document.getElementById('volume-effects');
-Object.values(audio).forEach(s => s.volume = initEffectsVol ? parseFloat(initEffectsVol.value) : 0.3);
-audio.music.loop = true;
-audio.music.volume = initMusicVol ? parseFloat(initMusicVol.value) : 0.1;
-
-/* --- OBSŁUGA GŁOŚNOŚCI --- */
-
 const musicSlider = document.getElementById('volume-music');
+const effectsSlider = document.getElementById('volume-effects');
+EFFECT_KEYS.forEach(k => { audio[k].volume = effectsSlider ? parseFloat(effectsSlider.value) : 0.3; });
+audio.music.loop = true;
+audio.music.volume = musicSlider ? parseFloat(musicSlider.value) : 0.1;
+
 if (musicSlider) {
     musicSlider.addEventListener('input', () => {
         audio.music.volume = musicSlider.value;
     });
 }
-
-const effectsSlider = document.getElementById('volume-effects');
 if (effectsSlider) {
     effectsSlider.addEventListener('input', () => {
-        const vol = effectsSlider.value;
-        audio.hit.volume = vol;
-        audio.splash.volume = vol;
-        audio.win.volume = vol;
-        audio.lose.volume = vol;
+        EFFECT_KEYS.forEach(k => { audio[k].volume = effectsSlider.value; });
     });
 }
+
+/* --- ZAPIS (bezpieczny, gdy storage.js nie jest załadowany) --- */
+
+function safeGet(key) {
+    try { return typeof store !== 'undefined' ? store.get(key) : null; } catch (e) { return null; }
+}
+
+function safeSet(key, value) {
+    try { if (typeof store !== 'undefined') store.set(key, value); } catch (e) { /* brak zapisu */ }
+}
+
+function loadJSON(key, fallback) {
+    try {
+        let v = safeGet(key);
+        if (v === null || v === undefined || v === '') return fallback;
+        if (typeof v === 'string') v = JSON.parse(v);
+        if (typeof v === 'string') v = JSON.parse(v);
+        return (v && typeof v === 'object') ? v : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function saveJSON(key, value) {
+    safeSet(key, JSON.stringify(value));
+}
+
+function loadString(key, fallback) {
+    const v = safeGet(key);
+    return (v === null || v === undefined || v === '') ? fallback : String(v).replace(/"/g, '');
+}
+
+const stats = Object.assign(
+    { games: 0, wins: 0, losses: 0, shots: 0, hits: 0, streak: 0, bestStreak: 0, byDiff: {}, bestShots: {} },
+    loadJSON(STATS_KEY, {})
+);
+if (!stats.byDiff || typeof stats.byDiff !== 'object') stats.byDiff = {};
+if (!stats.bestShots || typeof stats.bestShots !== 'object') stats.bestShots = {};
+const achSaved = loadJSON(ACH_KEY, []);
+const unlockedAch = new Set(Array.isArray(achSaved) ? achSaved : []);
+
+const ACHIEVEMENTS = {
+    firstWin:    'Pierwsza wygrana',
+    fast:        'Szybka wojna (wygrana w 45 strzałach lub mniej)',
+    sniper:      'Snajper (celność co najmniej 50%)',
+    untouchable: 'Nietykalny (wygrana bez straty statku)',
+    hard:        'Pogromca Trudnego',
+    cheater:     'Pogromca Cheatera',
+    streak3:     'Seria 3 zwycięstw',
+    salvo:       'Mistrz Salwy'
+};
 
 /* --- OBSŁUGA PEŁNEGO EKRANU --- */
 
@@ -89,31 +189,61 @@ function toggleFullscreen() {
     GameFullscreen.toggle(battleshipContainer, updateFullscreenUI);
 }
 
+/* --- POMOCNICZE --- */
+
+function insertAfter(ref, el) {
+    if (ref && ref.parentElement) ref.parentElement.insertBefore(el, ref.nextSibling);
+}
+
+function schedule(fn, ms) {
+    clearTimeout(botTimer);
+    botTimer = setTimeout(fn, ms);
+}
+
+function vibrate(ms) {
+    if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+function cellAt(grid, x, y) {
+    return grid.children[y * BOARD_SIZE + x];
+}
+
+function isSetupPhase() {
+    return !gameState.active && !gameState.over;
+}
+
 /* --- INICJALIZACJA --- */
 
 function initGame() {
+    clearTimeout(botTimer);
     createGrid(playerGrid, 'player');
     createGrid(computerGrid, 'computer');
     resetData();
     randomizeShips(gameState.playerShips);
-    renderGrid(playerGrid, gameState.playerShips, true);
-    updateFleetInfo();
-    log("Witaj, Kapitanie. Rozmieść flotę i rozpocznij bitwę.", "info");
+    placement.selected = null;
+    placement.horizontal = true;
+    refreshSetupUI();
+    log("Witaj, Kapitanie. Rozmieść flotę (kliknij statek, aby go przenieść) i rozpocznij bitwę.", "info");
 }
 
 function resetData() {
     gameState.playerShips = createEmptyBoard();
     gameState.computerShips = createEmptyBoard();
     gameState.active = false;
+    gameState.over = false;
     gameState.playerHits = 0;
     gameState.computerHits = 0;
     gameState.botQueue = [];
     gameState.lastHit = null;
     gameState.huntDirection = null;
     gameState.playerTurn = true;
+    gameState.shotsLeft = 1;
+    gm = { shots: 0, hits: 0 };
+    aim = null;
 
     logContent.classList.remove('mode-cheater');
     difficultySelect.disabled = false;
+    if (rulesSelect) rulesSelect.disabled = false;
 
     btnStart.style.display = 'inline-block';
     btnRestart.style.display = 'none';
@@ -132,19 +262,96 @@ function createEmptyBoard() {
 
 function createGrid(container, owner) {
     container.innerHTML = '';
+    container.setAttribute('role', 'grid');
+    container.setAttribute('aria-label', owner === 'player' ? 'Twoja plansza' : 'Plansza wroga');
+
     for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
             cell.dataset.x = x;
             cell.dataset.y = y;
+            cell.title = coord(x, y);
+            cell.setAttribute('role', 'gridcell');
+            cell.setAttribute('aria-label', coord(x, y));
 
-            if (owner === 'computer') {
-                cell.addEventListener('click', handlePlayerShot);
+            // Osie planszy (litery nad pierwszym rzędem, cyfry przy pierwszej kolumnie)
+            if (y === 0) {
+                const s = document.createElement('span');
+                s.className = 'axis axis-x';
+                s.textContent = COL_LABELS[x];
+                cell.appendChild(s);
+            }
+            if (x === 0) {
+                const s = document.createElement('span');
+                s.className = 'axis axis-y';
+                s.textContent = String(y + 1);
+                cell.appendChild(s);
             }
             container.appendChild(cell);
         }
     }
+}
+
+/* --- ANALIZA PLANSZY (wspólna dla bota, listy floty i rysowania) --- */
+
+// Zwraca wszystkie pola statku, do którego należy pole (x, y). Statki nie stykają się, więc
+// wystarczy przejść po sąsiadach w 4 kierunkach (1 = statek, 3 = trafiony segment).
+function shipCells(board, x, y) {
+    const out = [];
+    const seen = new Set();
+    const stack = [{ x, y }];
+
+    while (stack.length) {
+        const c = stack.pop();
+        const key = c.y * BOARD_SIZE + c.x;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const v = board[c.y][c.x];
+        if (v !== 1 && v !== 3) continue;
+        out.push(c);
+
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+            const nx = c.x + dx;
+            const ny = c.y + dy;
+            if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) stack.push({ x: nx, y: ny });
+        });
+    }
+    return out;
+}
+
+// sunk: klucze pól zatopionych statków, active: trafione pola niezatopionych statków,
+// remaining: długości statków, które jeszcze pływają, sunkSizes: długości zatopionych
+function analyzeBoard(board) {
+    const seen = new Set();
+    const sunk = new Set();
+    const active = [];
+    const remaining = [];
+    const sunkSizes = [];
+
+    for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+            const v = board[y][x];
+            if ((v !== 1 && v !== 3) || seen.has(y * BOARD_SIZE + x)) continue;
+
+            const cells = shipCells(board, x, y);
+            cells.forEach(c => seen.add(c.y * BOARD_SIZE + c.x));
+
+            if (cells.every(c => board[c.y][c.x] === 3)) {
+                cells.forEach(c => sunk.add(c.y * BOARD_SIZE + c.x));
+                sunkSizes.push(cells.length);
+            } else {
+                remaining.push(cells.length);
+                cells.forEach(c => { if (board[c.y][c.x] === 3) active.push(c); });
+            }
+        }
+    }
+    return { sunk, active, remaining, sunkSizes };
+}
+
+function countAliveShips(board) {
+    return analyzeBoard(board).remaining.length;
 }
 
 /* --- LOGIKA ROZMIESZCZANIA --- */
@@ -176,6 +383,7 @@ function randomizeShips(board) {
 }
 
 function canPlace(board, x, y, size, horizontal) {
+    if (x < 0 || y < 0) return false;
     if (horizontal && x + size > BOARD_SIZE) return false;
     if (!horizontal && y + size > BOARD_SIZE) return false;
 
@@ -202,117 +410,404 @@ function place(board, x, y, size, horizontal) {
     }
 }
 
-/* --- ROZGRYWKA --- */
+// Długości statków, które gracz jeszcze musi postawić (malejąco)
+function unplacedSizes() {
+    const a = analyzeBoard(gameState.playerShips);
+    const counts = {};
+    a.remaining.concat(a.sunkSizes).forEach(s => { counts[s] = (counts[s] || 0) + 1; });
+    const out = [];
+    SHIPS_CONFIG.forEach(s => {
+        if (counts[s] > 0) counts[s]--;
+        else out.push(s);
+    });
+    return out;
+}
 
-function handlePlayerShot(e) {
-    if (!gameState.active || !gameState.playerTurn) return;
+function ensureSelection() {
+    const un = unplacedSizes();
+    if (!un.length) placement.selected = null;
+    else if (!un.includes(placement.selected)) placement.selected = un[0];
+}
 
-    const cell = e.target.closest('.cell');
-    if (!cell || !computerGrid.contains(cell)) return;
+// Pozycja i poprawność statku, który zostałby postawiony po kliknięciu w pole (hx, hy)
+function previewCells(hx, hy) {
+    const size = placement.selected;
+    if (!size) return null;
+
+    let x = hx, y = hy;
+    if (placement.horizontal) x = Math.min(hx, BOARD_SIZE - size);
+    else y = Math.min(hy, BOARD_SIZE - size);
+
+    const cells = [];
+    for (let i = 0; i < size; i++) {
+        cells.push({ x: x + (placement.horizontal ? i : 0), y: y + (placement.horizontal ? 0 : i) });
+    }
+    return { x, y, size, cells, valid: canPlace(gameState.playerShips, x, y, size, placement.horizontal) };
+}
+
+function clearPreview() {
+    placement.preview.forEach(i => {
+        const el = playerGrid.children[i];
+        if (el) {
+            el.classList.remove('preview-ok');
+            el.classList.remove('preview-bad');
+        }
+    });
+    placement.preview = [];
+}
+
+function showPreview() {
+    clearPreview();
+    if (!isSetupPhase() || !placement.hover) return;
+    const p = previewCells(placement.hover.x, placement.hover.y);
+    if (!p) return;
+    p.cells.forEach(c => {
+        const i = c.y * BOARD_SIZE + c.x;
+        const el = playerGrid.children[i];
+        if (el) {
+            el.classList.add(p.valid ? 'preview-ok' : 'preview-bad');
+            placement.preview.push(i);
+        }
+    });
+}
+
+function refreshSetupUI() {
+    ensureSelection();
+    const setup = isSetupPhase();
+    const remaining = unplacedSizes();
+
+    renderGrid(playerGrid, gameState.playerShips, true);
+    playerGrid.classList.toggle('placing', setup);
+
+    if (setup) {
+        turnStatus.textContent = remaining.length
+            ? `Rozstawianie: statek ${placement.selected}-masztowy (R - obrót)`
+            : 'Flota gotowa - naciśnij Start';
+    }
+
+    btnStart.disabled = remaining.length > 0;
+    if (btnRotate) btnRotate.style.display = setup ? 'inline-block' : 'none';
+    if (btnClear) btnClear.style.display = setup ? 'inline-block' : 'none';
+
+    updateFleetInfo();
+    showPreview();
+}
+
+function liftShip(x, y) {
+    const board = gameState.playerShips;
+    const cells = shipCells(board, x, y);
+    if (!cells.length) return;
+
+    cells.forEach(c => { board[c.y][c.x] = 0; });
+    if (cells.length > 1) placement.horizontal = cells[0].y === cells[1].y;
+    placement.selected = cells.length;
+    refreshSetupUI();
+}
+
+function rotatePlacement() {
+    if (!isSetupPhase()) return;
+    placement.horizontal = !placement.horizontal;
+    showPreview();
+}
+
+function onPlayerCellClick(e) {
+    if (!isSetupPhase()) return;
+    const cell = e.target.closest ? e.target.closest('.cell') : null;
+    if (!cell || !playerGrid.contains(cell)) return;
 
     const x = parseInt(cell.dataset.x, 10);
     const y = parseInt(cell.dataset.y, 10);
     if (Number.isNaN(x) || Number.isNaN(y)) return;
 
+    // Kliknięcie w postawiony statek = podniesienie go do ponownego ustawienia
+    if (gameState.playerShips[y][x] === 1) {
+        liftShip(x, y);
+        return;
+    }
+
+    const p = previewCells(x, y);
+    if (!p) {
+        log("Wszystkie statki są rozstawione. Kliknij statek, aby go przenieść.", "info");
+        return;
+    }
+    if (!p.valid) {
+        log("Tu nie można postawić statku - statki nie mogą się stykać.", "info");
+        shakeGrid(playerGrid);
+        return;
+    }
+
+    place(gameState.playerShips, p.x, p.y, p.size, placement.horizontal);
+    placement.hover = { x, y };
+    refreshSetupUI();
+}
+
+function onPlayerCellOver(e) {
+    if (!isSetupPhase()) return;
+    const cell = e.target.closest ? e.target.closest('.cell') : null;
+    if (!cell) return;
+    placement.hover = { x: parseInt(cell.dataset.x, 10), y: parseInt(cell.dataset.y, 10) };
+    showPreview();
+}
+
+/* --- TURY I ZASADY --- */
+
+function updateStatus(extra) {
+    if (!gameState.active) return;
+    if (gameState.playerTurn) {
+        turnStatus.textContent = gameState.rules === 'salvo'
+            ? `TWÓJ RUCH - STRZAŁY: ${gameState.shotsLeft}`
+            : (extra || "TWÓJ RUCH");
+        turnStatus.style.color = "var(--accent)";
+    } else {
+        turnStatus.textContent = gameState.rules === 'salvo'
+            ? `RUCH KOMPUTERA - STRZAŁY: ${gameState.shotsLeft}`
+            : "RUCH KOMPUTERA";
+        turnStatus.style.color = "var(--danger)";
+    }
+}
+
+function startTurn(who) {
+    gameState.playerTurn = (who === 'player');
+
+    if (gameState.rules === 'salvo') {
+        const board = who === 'player' ? gameState.playerShips : gameState.computerShips;
+        gameState.shotsLeft = Math.max(1, countAliveShips(board));
+        log(who === 'player'
+            ? `Salwa: masz ${gameState.shotsLeft} strzałów.`
+            : `Salwa wroga: ${gameState.shotsLeft} strzałów.`, who === 'player' ? 'player' : 'enemy');
+    } else {
+        gameState.shotsLeft = 1;
+    }
+
+    updateStatus();
+    if (who === 'bot') schedule(botTurn, 800);
+}
+
+// Zużywa jeden strzał. Zwraca true, jeśli strzelający ma jeszcze ruch.
+function continuesTurn(isHit) {
+    gameState.shotsLeft--;
+    if (gameState.rules === 'classic') return isHit;
+    if (gameState.rules === 'noextra') return false;
+    return gameState.shotsLeft > 0; // salwa
+}
+
+/* --- STRZAŁY GRACZA --- */
+
+function onEnemyCellClick(e) {
+    if (!gameState.active || !gameState.playerTurn) return;
+
+    const cell = e.target.closest ? e.target.closest('.cell') : null;
+    if (!cell || !computerGrid.contains(cell)) return;
+
+    const x = parseInt(cell.dataset.x, 10);
+    const y = parseInt(cell.dataset.y, 10);
+    if (Number.isNaN(x) || Number.isNaN(y)) return;
     if (gameState.computerShips[y][x] >= 2) return;
 
+    // Na telefonie: pierwszy dotyk celuje, drugi strzela
+    if (confirmShotEl && confirmShotEl.checked) {
+        if (!aim || aim.x !== x || aim.y !== y) {
+            setAim(x, y);
+            return;
+        }
+    }
+    fireAtEnemy(x, y);
+}
+
+function setAim(x, y) {
+    clearAim();
+    aim = { x, y };
+    const el = cellAt(computerGrid, x, y);
+    if (el) el.classList.add('aim');
+}
+
+function clearAim() {
+    if (aim) {
+        const el = cellAt(computerGrid, aim.x, aim.y);
+        if (el) el.classList.remove('aim');
+    }
+    aim = null;
+}
+
+function fireAtEnemy(x, y) {
+    if (!gameState.active || !gameState.playerTurn) return;
+    if (gameState.computerShips[y][x] >= 2) return;
+    clearAim();
+
+    const cell = cellAt(computerGrid, x, y);
     const isHit = (gameState.computerShips[y][x] === 1);
     gameState.computerShips[y][x] = isHit ? 3 : 2;
+    gm.shots++;
 
     updateVisuals(cell, isHit);
 
     if (isHit) {
+        gm.hits++;
         gameState.computerHits++;
         const sunk = resolveSunk('computer', x, y);
-        log(`Trafienie [${x},${y}]! Masz dodatkowy ruch!`, "player");
+        if (gameState.rules === 'classic') {
+            log(`Trafienie ${coord(x, y)}! Masz dodatkowy ruch!`, "player");
+        } else {
+            log(`Trafienie ${coord(x, y)}!`, "player");
+        }
         if (sunk) log("Zatopiony! Wokół statku nie ma już innych jednostek.", "player");
-        updateFleetInfo();
-        turnStatus.textContent = "TRAFIENIE! STRZELAJ DALEJ";
         playAudio('hit');
-        checkWin();
     } else {
-        log(`Pudło [${x},${y}].`, "info");
+        log(`Pudło ${coord(x, y)}.`, "info");
         playAudio('splash');
-        endTurn();
     }
-}
 
-function endTurn() {
-    gameState.playerTurn = !gameState.playerTurn;
+    updateFleetInfo();
+    if (checkWin()) return;
 
-    if (gameState.playerTurn) {
-        turnStatus.textContent = "TWÓJ RUCH";
-        turnStatus.style.color = "var(--accent)";
+    if (continuesTurn(isHit)) {
+        updateStatus(isHit ? "TRAFIENIE! STRZELAJ DALEJ" : undefined);
     } else {
-        turnStatus.textContent = "RUCH KOMPUTERA";
-        turnStatus.style.color = "var(--danger)";
-        setTimeout(botTurn, 800);
+        startTurn('bot');
     }
 }
 
 /* --- AI (BOT) --- */
 
-function botTurn() {
-    if (!gameState.active) return;
+function unknownCells(board) {
+    const out = [];
+    for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+            if (board[y][x] < 2) out.push({ x, y });
+        }
+    }
+    return out;
+}
 
-    let target = null;
-    let cheatChance = 0;
+function pickRandom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}
 
-    if (gameState.difficulty === 'hard') cheatChance = 0.3;
-    if (gameState.difficulty === 'cheater') cheatChance = 0.7;
+function botChooseTarget() {
+    const board = gameState.playerShips;
+    const diff = gameState.difficulty;
 
-    if (gameState.botQueue.length === 0 && Math.random() < cheatChance) {
-        const playerShipCoordinates = [];
+    // Cheater: gdy nie ma trwającego polowania, często "widzi" Twój statek
+    if (diff === 'cheater' && analyzeBoard(board).active.length === 0 && Math.random() < 0.7) {
+        const ships = [];
         for (let y = 0; y < BOARD_SIZE; y++) {
             for (let x = 0; x < BOARD_SIZE; x++) {
-                if (gameState.playerShips[y][x] === 1) {
-                    playerShipCoordinates.push({ x, y });
+                if (board[y][x] === 1) ships.push({ x, y });
+            }
+        }
+        if (ships.length) {
+            log("!!! SYSTEMY ZAKŁÓCONE: Wróg namierzył Twój sygnał !!!", "enemy");
+            return pickRandom(ships);
+        }
+    }
+
+    // Trudny i Cheater: mapa prawdopodobieństwa
+    if (diff === 'hard' || diff === 'cheater') {
+        return densityTarget();
+    }
+
+    // Łatwy i Normalny: dobijanie trafionych statków + wyszukiwanie
+    while (gameState.botQueue.length > 0 &&
+           board[gameState.botQueue[0].y][gameState.botQueue[0].x] >= 2) {
+        gameState.botQueue.shift();
+    }
+    // Łatwy bot czasem "zapomina" dobić trafiony statek i strzela losowo
+    const forgetful = diff === 'easy' && Math.random() < 0.35;
+    if (gameState.botQueue.length > 0 && !forgetful) {
+        return gameState.botQueue.shift();
+    }
+    if (gameState.botQueue.length === 0) {
+        gameState.lastHit = null;
+        gameState.huntDirection = null;
+    }
+
+    const unknown = unknownCells(board);
+    if (diff === 'medium') {
+        // Szachownica: każdy statek (poza jednomasztowcem) zahacza o pole tego koloru
+        const parity = unknown.filter(c => (c.x + c.y) % 2 === 0 && isAreaClearForBot(c.x, c.y));
+        if (parity.length) return pickRandom(parity);
+    }
+    return pickRandom(unknown);
+}
+
+// Dla każdego pola zlicza, w ilu ustawieniach pozostałych statków mogłoby się znaleźć.
+// Gdy są trafione, niezatopione statki, liczą się tylko ustawienia je obejmujące.
+function densityTarget() {
+    const board = gameState.playerShips;
+    const { sunk, active, remaining } = analyzeBoard(board);
+    const targetMode = active.length > 0;
+    const score = new Array(BOARD_SIZE * BOARD_SIZE).fill(0);
+
+    // Pola po przekątnej od trafienia nie mogą należeć do żadnego statku (statki się nie stykają)
+    const diagBlocked = new Array(BOARD_SIZE * BOARD_SIZE).fill(false);
+    for (let y = 0; y < BOARD_SIZE; y++) {
+        for (let x = 0; x < BOARD_SIZE; x++) {
+            diagBlocked[y * BOARD_SIZE + x] = !isAreaClearForBot(x, y);
+        }
+    }
+
+    remaining.forEach(size => {
+        [true, false].forEach(horizontal => {
+            for (let y = 0; y < BOARD_SIZE; y++) {
+                for (let x = 0; x < BOARD_SIZE; x++) {
+                    if (horizontal && x + size > BOARD_SIZE) continue;
+                    if (!horizontal && y + size > BOARD_SIZE) continue;
+
+                    let ok = true;
+                    let hitsCovered = 0;
+                    const cells = [];
+                    for (let i = 0; i < size; i++) {
+                        const cx = x + (horizontal ? i : 0);
+                        const cy = y + (horizontal ? 0 : i);
+                        const k = cy * BOARD_SIZE + cx;
+                        const v = board[cy][cx];
+                        if (v === 2 || sunk.has(k) || diagBlocked[k]) { ok = false; break; }
+                        if (v === 3) hitsCovered++;
+                        cells.push(k);
+                    }
+                    if (!ok) continue;
+                    if (targetMode && hitsCovered === 0) continue;
+
+                    const w = targetMode ? Math.pow(4, hitsCovered) : 1;
+                    cells.forEach(k => {
+                        if (board[Math.floor(k / BOARD_SIZE)][k % BOARD_SIZE] !== 3) score[k] += w;
+                    });
                 }
             }
-        }
+        });
+    });
 
-        if (playerShipCoordinates.length > 0) {
-            target = playerShipCoordinates[Math.floor(Math.random() * playerShipCoordinates.length)];
-
-            if (gameState.difficulty === 'cheater') {
-                log("!!! SYSTEMY ZAKŁÓCONE: Wróg namierzył Twój sygnał !!!", "enemy");
-            } else {
-                log("Bot użył sonaru dalekiego zasięgu.", "enemy");
-            }
-        }
+    let best = 0;
+    let picks = [];
+    for (let k = 0; k < score.length; k++) {
+        const v = board[Math.floor(k / BOARD_SIZE)][k % BOARD_SIZE];
+        if (v >= 2) continue;
+        if (score[k] > best) { best = score[k]; picks = [k]; }
+        else if (score[k] === best && best > 0) picks.push(k);
     }
 
-    if (!target) {
-        while (gameState.botQueue.length > 0 && gameState.playerShips[gameState.botQueue[0].y][gameState.botQueue[0].x] >= 2) {
-            gameState.botQueue.shift();
-        }
+    if (!picks.length) return pickRandom(unknownCells(board));
+    const k = pickRandom(picks);
+    return { x: k % BOARD_SIZE, y: Math.floor(k / BOARD_SIZE) };
+}
 
-        if (gameState.botQueue.length > 0) {
-            target = gameState.botQueue.shift();
-        } else {
-            gameState.lastHit = null;
-            gameState.huntDirection = null;
-            do {
-                target = {
-                    x: Math.floor(Math.random() * BOARD_SIZE),
-                    y: Math.floor(Math.random() * BOARD_SIZE)
-                };
-            } while (gameState.playerShips[target.y][target.x] >= 2);
-        }
-    }
+function botTurn() {
+    if (!gameState.active || gameState.playerTurn) return;
+
+    const target = botChooseTarget();
+    if (!target) return;
 
     const x = target.x;
     const y = target.y;
-    const isHit = (gameState.playerShips[y][x] === 1);
-    gameState.playerShips[y][x] = isHit ? 3 : 2;
+    const board = gameState.playerShips;
+    const isHit = (board[y][x] === 1);
+    board[y][x] = isHit ? 3 : 2;
 
-    const cellIndex = y * BOARD_SIZE + x;
-    const cell = playerGrid.children[cellIndex];
-    updateVisuals(cell, isHit);
+    updateVisuals(cellAt(playerGrid, x, y), isHit);
 
     if (isHit) {
         gameState.playerHits++;
-        log(`Wróg trafił [${x},${y}]!`, "enemy");
+        log(`Wróg trafił ${coord(x, y)}!`, "enemy");
         playAudio('hit');
 
         if (resolveSunk('player', x, y)) {
@@ -320,19 +815,23 @@ function botTurn() {
             gameState.botQueue = [];
             gameState.lastHit = null;
             gameState.huntDirection = null;
-        } else {
+        } else if (gameState.difficulty === 'easy' || gameState.difficulty === 'medium') {
             addSmartNeighbors(x, y);
             gameState.lastHit = { x, y };
         }
-        updateFleetInfo();
-        checkWin();
-        if (gameState.active) {
-            setTimeout(botTurn, 1000);
-        }
     } else {
-        log("Wróg spudłował.", "info");
+        log(`Wróg spudłował (${coord(x, y)}).`, "info");
         playAudio('splash');
-        endTurn();
+    }
+
+    updateFleetInfo();
+    if (checkWin()) return;
+
+    if (continuesTurn(isHit)) {
+        updateStatus();
+        schedule(botTurn, gameState.rules === 'salvo' ? 700 : 1000);
+    } else {
+        startTurn('player');
     }
 }
 
@@ -385,33 +884,7 @@ function isAreaClearForBot(x, y) {
     return true;
 }
 
-/* --- ZATOPIENIA I LICZNIK FLOTY --- */
-
-// Zwraca wszystkie pola statku, do którego należy pole (x, y). Statki nie stykają się, więc
-// wystarczy przejść po sąsiadach w 4 kierunkach (1 = statek, 3 = trafiony segment).
-function shipCells(board, x, y) {
-    const out = [];
-    const seen = new Set();
-    const stack = [{ x, y }];
-
-    while (stack.length) {
-        const c = stack.pop();
-        const key = c.y * BOARD_SIZE + c.x;
-        if (seen.has(key)) continue;
-        seen.add(key);
-
-        const v = board[c.y][c.x];
-        if (v !== 1 && v !== 3) continue;
-        out.push(c);
-
-        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
-            const nx = c.x + dx;
-            const ny = c.y + dy;
-            if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) stack.push({ x: nx, y: ny });
-        });
-    }
-    return out;
-}
+/* --- ZATOPIENIA I LISTA FLOTY --- */
 
 // Jeśli trafienie zatopiło statek: oznacza go i wszystkie pola wokół jako pudła. Zwraca true/false.
 function resolveSunk(owner, x, y) {
@@ -426,6 +899,7 @@ function resolveSunk(owner, x, y) {
         if (el) {
             el.classList.remove('hit');
             el.classList.add('sunk');
+            fxCell(el, 'sunk');
         }
         for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
@@ -440,23 +914,63 @@ function resolveSunk(owner, x, y) {
             }
         }
     });
+
+    shakeGrid(grid);
+    vibrate(owner === 'player' ? [80, 40, 80] : 50);
+    setTimeout(() => playAudio('sunk'), 150);
     return true;
 }
 
-function countAliveShips(board) {
-    const seen = new Set();
-    let alive = 0;
-    for (let y = 0; y < BOARD_SIZE; y++) {
-        for (let x = 0; x < BOARD_SIZE; x++) {
-            const v = board[y][x];
-            if ((v === 1 || v === 3) && !seen.has(y * BOARD_SIZE + x)) {
-                const cells = shipCells(board, x, y);
-                cells.forEach(c => seen.add(c.y * BOARD_SIZE + c.x));
-                if (cells.some(c => board[c.y][c.x] === 1)) alive++;
-            }
-        }
+function renderFleetTracker(el, board, setupMode) {
+    if (!el) return;
+    el.innerHTML = '';
+    const a = analyzeBoard(board);
+    const used = {};
+
+    let placedCount = {};
+    if (setupMode) {
+        a.remaining.concat(a.sunkSizes).forEach(s => { placedCount[s] = (placedCount[s] || 0) + 1; });
     }
-    return alive;
+    const sunkCount = {};
+    a.sunkSizes.forEach(s => { sunkCount[s] = (sunkCount[s] || 0) + 1; });
+
+    let selectedMarked = false;
+
+    SHIPS_CONFIG.forEach(size => {
+        used[size] = (used[size] || 0) + 1;
+        const idx = used[size];
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'fleet-chip';
+        chip.setAttribute('aria-label', `Statek ${size}-masztowy`);
+
+        if (setupMode) {
+            const isPlaced = idx <= (placedCount[size] || 0);
+            if (isPlaced) {
+                chip.classList.add('placed');
+            } else {
+                chip.classList.add('selectable');
+                if (size === placement.selected && !selectedMarked) {
+                    chip.classList.add('selected');
+                    selectedMarked = true;
+                }
+                chip.addEventListener('click', () => {
+                    placement.selected = size;
+                    refreshSetupUI();
+                });
+            }
+        } else if (idx <= (sunkCount[size] || 0)) {
+            chip.classList.add('sunk');
+        }
+
+        for (let i = 0; i < size; i++) {
+            const seg = document.createElement('span');
+            seg.className = 'seg';
+            chip.appendChild(seg);
+        }
+        el.appendChild(chip);
+    });
 }
 
 function updateFleetInfo() {
@@ -473,19 +987,48 @@ function updateFleetInfo() {
             ? `Flota wroga: ${countAliveShips(gameState.computerShips)}/${total}`
             : 'Wróg ukryty';
     }
+
+    renderFleetTracker(playerTracker, gameState.playerShips, isSetupPhase());
+    renderFleetTracker(enemyTracker, gameState.computerShips, false);
 }
 
-/* --- UTILS --- */
+/* --- RYSOWANIE I EFEKTY --- */
+
+function fxCell(cell, type) {
+    if (!cell) return;
+    const span = document.createElement('span');
+    span.className = `fx fx-${type}`;
+    cell.appendChild(span);
+    setTimeout(() => span.remove(), 800);
+}
+
+function shakeGrid(grid) {
+    grid.classList.add('shake');
+    setTimeout(() => grid.classList.remove('shake'), 450);
+}
 
 function updateVisuals(cell, isHit) {
     if (isHit) {
         cell.classList.add('hit');
+        fxCell(cell, 'hit');
+        vibrate(25);
     } else {
         cell.classList.add('miss');
+        fxCell(cell, 'miss');
     }
 }
 
+// Rysuje planszę wg danych. Statki dostają klasy n-l/n-r/n-t/n-b (sąsiad po danej stronie),
+// dzięki którym CSS zaokrągla tylko końce kadłuba.
 function renderGrid(container, boardData, showShips) {
+    const { sunk } = analyzeBoard(boardData);
+
+    const visible = (x, y) => {
+        if (x < 0 || y < 0 || x >= BOARD_SIZE || y >= BOARD_SIZE) return false;
+        const v = boardData[y][x];
+        return v === 3 || (v === 1 && showShips);
+    };
+
     Array.from(container.children).forEach((cell, i) => {
         const x = i % BOARD_SIZE;
         const y = Math.floor(i / BOARD_SIZE);
@@ -494,24 +1037,85 @@ function renderGrid(container, boardData, showShips) {
         cell.className = 'cell';
         if (val === 1 && showShips) cell.classList.add('ship');
         if (val === 2) cell.classList.add('miss');
-        if (val === 3) cell.classList.add('hit');
+        if (val === 3) cell.classList.add(sunk.has(y * BOARD_SIZE + x) ? 'sunk' : 'hit');
+
+        if (visible(x, y)) {
+            if (visible(x - 1, y)) cell.classList.add('n-l');
+            if (visible(x + 1, y)) cell.classList.add('n-r');
+            if (visible(x, y - 1)) cell.classList.add('n-t');
+            if (visible(x, y + 1)) cell.classList.add('n-b');
+        }
     });
 }
+
+/* --- KONIEC GRY I STATYSTYKI --- */
 
 function checkWin() {
     if (gameState.computerHits === gameState.totalSegments) {
         endGame(true);
-    } else if (gameState.playerHits === gameState.totalSegments) {
-        endGame(false);
+        return true;
     }
+    if (gameState.playerHits === gameState.totalSegments) {
+        endGame(false);
+        return true;
+    }
+    return false;
+}
+
+function unlockAch(id) {
+    if (unlockedAch.has(id)) return;
+    unlockedAch.add(id);
+    saveJSON(ACH_KEY, Array.from(unlockedAch));
+    log(`🏆 Osiągnięcie: ${ACHIEVEMENTS[id]}`, "victory");
+}
+
+function recordGame(playerWon) {
+    const d = gameState.difficulty;
+    stats.games++;
+    stats.shots += gm.shots;
+    stats.hits += gm.hits;
+    stats.byDiff[d] = stats.byDiff[d] || { w: 0, l: 0 };
+
+    if (playerWon) {
+        stats.wins++;
+        stats.streak++;
+        stats.bestStreak = Math.max(stats.bestStreak, stats.streak);
+        stats.byDiff[d].w++;
+
+        const best = stats.bestShots[d];
+        if (!best || gm.shots < best) stats.bestShots[d] = gm.shots;
+
+        unlockAch('firstWin');
+        if (gm.shots <= 45) unlockAch('fast');
+        if (gm.shots > 0 && gm.hits / gm.shots >= 0.5) unlockAch('sniper');
+        if (countAliveShips(gameState.playerShips) === SHIPS_CONFIG.length) unlockAch('untouchable');
+        if (d === 'hard') unlockAch('hard');
+        if (d === 'cheater') unlockAch('cheater');
+        if (stats.streak >= 3) unlockAch('streak3');
+        if (gameState.rules === 'salvo') unlockAch('salvo');
+    } else {
+        stats.losses++;
+        stats.streak = 0;
+        stats.byDiff[d].l++;
+    }
+
+    saveJSON(STATS_KEY, stats);
+    renderStatsPanel();
 }
 
 function endGame(playerWon) {
     gameState.active = false;
+    gameState.over = true;
+    clearTimeout(botTimer);
+    clearAim();
+
     turnStatus.textContent = playerWon ? "ZWYCIĘSTWO!" : "PORAŻKA";
     turnStatus.style.color = playerWon ? "var(--accent-2)" : "var(--danger)";
 
     log(playerWon ? "GRATULACJE! Wroga flota zniszczona." : "MAYDAY! Nasza flota poszła na dno.", "victory");
+
+    const acc = gm.shots ? Math.round((gm.hits / gm.shots) * 100) : 0;
+    log(`Strzały: ${gm.shots} • Celność: ${acc}% • Twoja flota: ${countAliveShips(gameState.playerShips)}/${SHIPS_CONFIG.length}`, "info");
 
     audio.music.pause();
     if (playerWon) playAudio('win');
@@ -519,14 +1123,17 @@ function endGame(playerWon) {
 
     btnStart.style.display = 'none';
     btnRestart.style.display = 'inline-block';
+    playerGrid.classList.remove('placing');
 
     renderGrid(computerGrid, gameState.computerShips, true);
+    updateFleetInfo();
+    recordGame(playerWon);
 }
 
 function log(msg, type) {
     const div = document.createElement('div');
     div.className = `log-entry ${type}`;
-    div.innerText = `> ${msg}`;
+    div.textContent = `> ${msg}`;
     logContent.prepend(div);
 }
 
@@ -541,55 +1148,281 @@ function playAudio(type) {
     }
 }
 
+/* --- PANEL STATYSTYK --- */
+
+function buildStatsPanel() {
+    const host = (logContent.closest && logContent.closest('.game-log-container')) || logContent.parentElement;
+    if (!host) return;
+
+    const details = document.createElement('details');
+    details.className = 'bs-stats';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Statystyki i osiągnięcia';
+    details.appendChild(summary);
+
+    statsBody = document.createElement('div');
+    statsBody.className = 'bs-stats-body';
+    details.appendChild(statsBody);
+
+    insertAfter(host, details);
+    renderStatsPanel();
+}
+
+function renderStatsPanel() {
+    if (!statsBody) return;
+    statsBody.innerHTML = '';
+
+    const line = (text, cls) => {
+        const d = document.createElement('div');
+        d.className = cls || 'bs-line';
+        d.textContent = text;
+        statsBody.appendChild(d);
+    };
+
+    const acc = stats.shots ? Math.round((stats.hits / stats.shots) * 100) : 0;
+    line(`Partie: ${stats.games} • Wygrane: ${stats.wins} • Porażki: ${stats.losses}`);
+    line(`Seria zwycięstw: ${stats.streak} (najlepsza: ${stats.bestStreak}) • Celność ogółem: ${acc}%`);
+
+    DIFFICULTIES.forEach(([id, name]) => {
+        const d = stats.byDiff[id];
+        if (!d) return;
+        const best = stats.bestShots[id];
+        line(`${name}: ${d.w}W / ${d.l}P${best ? ` • najmniej strzałów: ${best}` : ''}`);
+    });
+
+    line('Osiągnięcia', 'bs-head');
+    Object.keys(ACHIEVEMENTS).forEach(id => {
+        line(`${unlockedAch.has(id) ? '🏆' : '🔒'} ${ACHIEVEMENTS[id]}`,
+            unlockedAch.has(id) ? 'bs-line bs-ach on' : 'bs-line bs-ach');
+    });
+}
+
+/* --- DODATKOWY INTERFEJS (wstrzykiwany skryptem) --- */
+
+function makeTracker(grid) {
+    const el = document.createElement('div');
+    el.className = 'fleet-tracker';
+    grid.parentElement.insertBefore(el, grid);
+    return el;
+}
+
+function injectUI() {
+    // Przyciski obrotu i czyszczenia (obok "Losuj")
+    const btnClass = btnRandomize.className;
+    btnRotate = document.createElement('button');
+    btnRotate.type = 'button';
+    btnRotate.className = btnClass;
+    btnRotate.textContent = 'Obróć (R)';
+    insertAfter(btnRandomize, btnRotate);
+
+    btnClear = document.createElement('button');
+    btnClear.type = 'button';
+    btnClear.className = btnClass;
+    btnClear.textContent = 'Wyczyść';
+    insertAfter(btnRotate, btnClear);
+
+    // Poziomy trudności (w pliku HTML mogły być tylko niektóre, więc odtwarzamy pełną listę)
+    const prevDiff = loadString(DIFF_KEY, difficultySelect.value || 'easy');
+    difficultySelect.innerHTML = '';
+    DIFFICULTIES.forEach(([id, name]) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = name;
+        difficultySelect.appendChild(opt);
+    });
+    difficultySelect.value = DIFF_NAMES[prevDiff] ? prevDiff : 'easy';
+    difficultySelect.addEventListener('change', () => safeSet(DIFF_KEY, difficultySelect.value));
+
+    // Wybór zasad
+    const lbl = document.createElement('label');
+    lbl.textContent = 'Zasady:';
+    lbl.htmlFor = 'rules-select';
+    lbl.className = 'bs-label';
+    insertAfter(difficultySelect, lbl);
+
+    rulesSelect = document.createElement('select');
+    rulesSelect.id = 'rules-select';
+    rulesSelect.className = difficultySelect.className;
+    RULES.forEach(([id, name]) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = name;
+        rulesSelect.appendChild(opt);
+    });
+    const prevRules = loadString(RULES_KEY, 'classic');
+    rulesSelect.value = RULES.some(r => r[0] === prevRules) ? prevRules : 'classic';
+    rulesSelect.addEventListener('change', () => safeSet(RULES_KEY, rulesSelect.value));
+    insertAfter(lbl, rulesSelect);
+
+    // Potwierdzanie strzału (domyślnie włączone na ekranach dotykowych)
+    const coarse = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    const confirmLabel = document.createElement('label');
+    confirmLabel.className = 'bs-check';
+    confirmShotEl = document.createElement('input');
+    confirmShotEl.type = 'checkbox';
+    confirmShotEl.id = 'confirm-shot';
+    const savedConfirm = safeGet(CONFIRM_KEY);
+    confirmShotEl.checked = savedConfirm === null || savedConfirm === undefined
+        ? coarse
+        : String(savedConfirm) === '1';
+    confirmShotEl.addEventListener('change', () => {
+        safeSet(CONFIRM_KEY, confirmShotEl.checked ? '1' : '0');
+        clearAim();
+    });
+    confirmLabel.appendChild(confirmShotEl);
+    const confirmText = document.createElement('span');
+    confirmText.textContent = ' Potwierdź strzał';
+    confirmLabel.appendChild(confirmText);
+    insertAfter(rulesSelect, confirmLabel);
+
+    // Listy floty nad planszami
+    playerTracker = makeTracker(playerGrid);
+    enemyTracker = makeTracker(computerGrid);
+
+    // Dostępność
+    turnStatus.setAttribute('aria-live', 'polite');
+    computerGrid.setAttribute('tabindex', '0');
+
+    buildStatsPanel();
+}
+
 /* --- LISTENERY --- */
 
 if (btnFullscreen) {
-    btnFullscreen.addEventListener('click', toggleFullscreen);
+    btnFullscreen.addEventListener('click', () => {
+        toggleFullscreen();
+        btnFullscreen.blur();
+    });
 }
 
 document.addEventListener('fullscreenchange', updateFullscreenUI);
 document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
 window.addEventListener('keydown', (e) => {
-    if (e.code === 'Escape' && battleshipContainer && battleshipContainer.classList.contains('is-fullscreen')) {
-        battleshipContainer.classList.remove('is-fullscreen');
-        updateFullscreenUI();
+    if (e.code === 'Escape') {
+        clearAim();
+        if (battleshipContainer && battleshipContainer.classList.contains('is-fullscreen')) {
+            battleshipContainer.classList.remove('is-fullscreen');
+            updateFullscreenUI();
+        }
+    }
+
+    const t = e.target;
+    if (t && t.closest && t.closest('input, select, textarea')) return;
+
+    if (e.code === 'KeyR' && isSetupPhase()) {
+        rotatePlacement();
+    }
+});
+
+// Rozstawianie: klik = postaw/przenieś, PPM = obrót
+playerGrid.addEventListener('click', onPlayerCellClick);
+playerGrid.addEventListener('mouseover', onPlayerCellOver);
+playerGrid.addEventListener('mouseleave', () => {
+    placement.hover = null;
+    clearPreview();
+});
+playerGrid.addEventListener('contextmenu', (e) => {
+    if (!isSetupPhase()) return;
+    e.preventDefault();
+    rotatePlacement();
+});
+
+// Strzelanie
+computerGrid.addEventListener('click', onEnemyCellClick);
+
+// Sterowanie klawiaturą na planszy wroga
+function showKbd() {
+    document.querySelectorAll('#computer-grid .kbd').forEach(c => c.classList.remove('kbd'));
+    const el = cellAt(computerGrid, kbd.x, kbd.y);
+    if (el) el.classList.add('kbd');
+}
+
+function hideKbd() {
+    document.querySelectorAll('#computer-grid .kbd').forEach(c => c.classList.remove('kbd'));
+}
+
+computerGrid.addEventListener('focus', showKbd);
+computerGrid.addEventListener('blur', hideKbd);
+computerGrid.addEventListener('keydown', (e) => {
+    let dx = 0, dy = 0;
+    if (e.code === 'ArrowLeft') dx = -1;
+    else if (e.code === 'ArrowRight') dx = 1;
+    else if (e.code === 'ArrowUp') dy = -1;
+    else if (e.code === 'ArrowDown') dy = 1;
+
+    if (dx || dy) {
+        e.preventDefault();
+        kbd.x = Math.max(0, Math.min(BOARD_SIZE - 1, kbd.x + dx));
+        kbd.y = Math.max(0, Math.min(BOARD_SIZE - 1, kbd.y + dy));
+        showKbd();
+    } else if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        fireAtEnemy(kbd.x, kbd.y);
     }
 });
 
 btnRandomize.addEventListener('click', () => {
+    if (!isSetupPhase()) return;
     randomizeShips(gameState.playerShips);
-    renderGrid(playerGrid, gameState.playerShips, true);
+    refreshSetupUI();
     log("Przegrupowano flotę.", "info");
 });
 
-btnStart.addEventListener('click', () => {
-    gameState.active = true;
-    gameState.difficulty = difficultySelect.value;
+window.addEventListener('load', () => {
+    injectUI();
 
-    if (gameState.difficulty === 'cheater') {
-        logContent.classList.add('mode-cheater');
-    } else {
-        logContent.classList.remove('mode-cheater');
-    }
+    btnRotate.addEventListener('click', rotatePlacement);
+    btnClear.addEventListener('click', () => {
+        if (!isSetupPhase()) return;
+        gameState.playerShips.forEach(row => row.fill(0));
+        placement.selected = null;
+        refreshSetupUI();
+        log("Plansza wyczyszczona. Rozstaw statki ręcznie.", "info");
+    });
 
-    randomizeShips(gameState.computerShips);
-    updateFleetInfo();
-    computerGrid.classList.remove('locked');
-    difficultySelect.disabled = true;
-    btnRandomize.disabled = true;
-    btnStart.style.display = 'none';
+    btnStart.addEventListener('click', () => {
+        if (!isSetupPhase()) return;
 
-    audio.music.play().catch(e => console.log("Muzyka wymaga interakcji", e));
+        if (unplacedSizes().length > 0) {
+            log("Rozstaw wszystkie statki albo użyj Losuj.", "info");
+            return;
+        }
 
-    log("Systemy bojowe aktywne. Wybierz cel.", "player");
-    turnStatus.textContent = "TWÓJ RUCH";
-});
+        gameState.active = true;
+        gameState.difficulty = difficultySelect.value;
+        gameState.rules = rulesSelect.value;
+        gm = { shots: 0, hits: 0 };
 
-btnRestart.addEventListener('click', () => {
-    audio.music.pause();
-    audio.music.currentTime = 0;
+        if (gameState.difficulty === 'cheater') {
+            logContent.classList.add('mode-cheater');
+        } else {
+            logContent.classList.remove('mode-cheater');
+        }
+
+        randomizeShips(gameState.computerShips);
+        computerGrid.classList.remove('locked');
+        difficultySelect.disabled = true;
+        rulesSelect.disabled = true;
+        btnRandomize.disabled = true;
+        btnStart.style.display = 'none';
+        playerGrid.classList.remove('placing');
+        clearPreview();
+        if (btnRotate) btnRotate.style.display = 'none';
+        if (btnClear) btnClear.style.display = 'none';
+        updateFleetInfo();
+
+        audio.music.play().catch(e => console.log("Muzyka wymaga interakcji", e));
+
+        log(`Systemy bojowe aktywne (${DIFF_NAMES[gameState.difficulty]}, ${RULES.find(r => r[0] === gameState.rules)[1]}). Wybierz cel.`, "player");
+        startTurn('player');
+    });
+
+    btnRestart.addEventListener('click', () => {
+        audio.music.pause();
+        audio.music.currentTime = 0;
+        initGame();
+    });
+
     initGame();
 });
-
-window.addEventListener('load', initGame);

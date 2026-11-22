@@ -407,3 +407,225 @@
     left: 50%;
     transform: translateX(-50%);
 }
+
+/* ==========================================================================
+   ROZBUDOWA: pauza, menu startowe, podsumowanie, osiągnięcia, ustawienia
+   ========================================================================== */
+
+/* Przycisk pauzy obok przycisku pełnego ekranu */
+.pause-btn {
+    top: 14px;
+    right: 84px;
+}
+
+.pause-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Menu startowe z wyborem poziomu trudności i statku */
+#menu {
+    flex-direction: column;
+    justify-content: flex-start;   /* bez centrowania we flexboxie: przy przepełnieniu góra byłaby nieosiągalna */
+    align-items: stretch;
+    gap: 14px;
+    width: min(94%, 470px);
+    top: calc(50% + 24px);          /* miejsce na przyciski pauzy i pełnego ekranu */
+    max-height: calc(100% - 64px);
+    overflow-y: auto;
+    padding: 18px 20px;
+    box-sizing: border-box;
+}
+
+#menu .btn {
+    align-self: center;
+}
+
+#menu h2 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.menu-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.menu-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: left;
+}
+
+.choice-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.choice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    text-align: left;
+    font: inherit;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.choice:hover {
+    border-color: var(--accent);
+}
+
+.choice.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.choice:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.choice-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.choice-desc {
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+/* Ekran końca gry z podsumowaniem */
+#gameOverMenu {
+    width: min(94%, 380px);
+    max-height: 94%;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.game-summary {
+    display: grid;
+    gap: 4px;
+    margin: 12px 0;
+    font-size: 0.88rem;
+    text-align: left;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.summary-row strong {
+    text-align: right;
+    color: #fff;
+}
+
+.menu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Powiadomienie o osiągnięciu */
+.achievement-toast {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    z-index: 30;
+    max-width: 90%;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+    background: rgba(15, 17, 21, 0.92);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    opacity: 0;
+    transform: translate(-50%, 16px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.achievement-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Sekcja ustawień */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px 24px;
+    align-items: center;
+}
+
+.option-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+/* Lista osiągnięć */
+.achievements-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0.6;
+}
+
+.achievement.unlocked {
+    opacity: 1;
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.achievement small {
+    color: var(--muted);
+}
+
+.achievement-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+@media (max-width: 480px) {
+    .choice-desc { display: none; }
+    #menu { gap: 6px; padding: 8px 10px; }
+    #menu h2 { display: none; }
+    .choice-group { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .choice { padding: 6px 4px; text-align: center; }
+    .choice-name { font-size: 0.74rem; }
+    .menu-label { font-size: 0.72rem; }
+    .menu-row { gap: 4px; }
+    #menu .btn { padding: 7px 22px; }
+    #gameOverMenu { top: calc(50% + 24px); max-height: calc(100% - 64px); padding: 14px; }
+}
