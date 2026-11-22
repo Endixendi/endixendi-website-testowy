@@ -40,6 +40,7 @@
 
                 <div class="board-container">
                     <button id="fullscreenBtn" class="fullscreen-btn" title="Pełny ekran" aria-label="Pełny ekran">⛶</button>
+                    <button id="pauseBtn" class="fullscreen-btn pause-btn" title="Pauza (P)" aria-label="Pauza">⏸</button>
                     <canvas id="gameCanvas"></canvas>
 
                     <div class="overlay" id="menu">
@@ -48,11 +49,20 @@
                         </div>
                     </div>
 
+                    <div class="overlay hidden" id="pauseMenu">
+                        <div class="modal">
+                            <h2>Pauza</h2>
+                            <button id="resumeBtn" class="btn">Wznów</button>
+                        </div>
+                    </div>
+
                     <div class="overlay hidden" id="gameOverMenu">
                         <div class="modal">
                             <h2>Game Over!</h2>
                             <p>Wynik: <span id="finalScore">0</span></p>
                             <p>Rekord: <span id="finalHighScore">0</span></p>
+                            <p id="runStats" class="game-stats"></p>
+                            <p id="totalStats" class="game-stats"></p>
                             <button id="restartBtn" class="btn">Zagraj ponownie</button>
                         </div>
                     </div>
@@ -72,13 +82,19 @@
 					<div class="controls-left">
 						<h3>Sterowanie i Interfejs</h3>
 						<ul>
-							<li><strong>Spacja / W / ↑</strong> – Skok nad przeszkodami</li>
-							<li><strong>S / ↓</strong> – Kucanie pod ptakami</li>
+							<li><strong>Spacja / W / ↑</strong> – Skok (przytrzymaj = wyższy skok)</li>
+							<li><strong>S / ↓</strong> – Kucanie pod dronami (w powietrzu: szybkie opadanie)</li>
+							<li><strong>P</strong> – Pauza (gra pauzuje się też po zmianie karty)</li>
+							<li><strong>Power-upy</strong> – <strong>M</strong> magnes, <strong>S</strong> spowolnienie czasu, <strong>x2</strong> podwójne punkty. Fioletowe kryształy ładują tarczę.</li>
 							<li><strong>Punkty</strong> – Naliczane automatycznie w miarę biegu. Gra przyspiesza wraz z Twoim postępem!</li>
 						</ul>
 					</div>
 
 					<div class="audio-settings mt-16">
+						<div class="volume-control skin-control">
+							<label for="skinSelect">Skórka Dino</label>
+							<select id="skinSelect"></select>
+						</div>
 						<div class="volume-control">
 							<label for="volume-music">Głośność muzyki</label>
 							<input id="volume-music" type="range" min="0" max="1" step="0.01" value="0.1">

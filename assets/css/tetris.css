@@ -424,3 +424,27 @@
     order: 5;
     flex-basis: 100%;
 }
+
+/* ==========================================================================
+   NOWE ELEMENTY: wyniki w menu, listy wyboru trybu i skórki
+   ========================================================================== */
+
+/* Wyniki / opis trybu w oknie popup (\n w tekście = nowa linia) */
+.modal .menu-extra {
+    font-size: 11px;
+    margin-top: 10px;
+    line-height: 1.5;
+    max-width: 250px;
+    white-space: pre-line;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.select-control select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: inherit;
+    font: inherit;
+}

@@ -249,3 +249,31 @@
         width: min(92vw, calc((100dvh - 110px) * (800 / 350)));
     }
 }
+
+/* ==========================================================================
+   NOWE ELEMENTY: pauza, statystyki, wybór skórki
+   ========================================================================== */
+
+/* Przycisk pauzy obok przycisku pełnego ekranu */
+.pause-btn {
+    left: 58px;
+}
+
+/* Statystyki na ekranie Game Over */
+.game-stats {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin: 6px 0;
+    max-width: 440px;
+}
+
+/* Lista wyboru skórki */
+.skin-control select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: inherit;
+    font: inherit;
+}

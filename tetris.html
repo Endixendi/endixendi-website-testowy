@@ -27,7 +27,7 @@
             <div class="card">
                 <h1>Tetris Game</h1>
                 <p class="lead">
-                    Klasyczna, kultowa gra logiczna w nowoczesnym, neonowym wydaniu. Manipuluj spadającymi klockami (Tetromino), dopasowuj geometryczne kształty i czyść pełne linie, zanim plansza zapełni się po samą górę. Z każdym poziomem tempo rośnie – podejmij wyzwanie i bij własne rekordy! 🧱
+                    Klasyczna, kultowa gra logiczna w nowoczesnym, neonowym wydaniu. Manipuluj spadającymi klockami (Tetromino), dopasowuj geometryczne kształty i czyść pełne linie, zanim plansza zapełni się po samą górę. Z każdym poziomem tempo rośnie – podejmij wyzwanie i bij własne rekordy!
                 </p>
             </div>
         </section>
@@ -52,6 +52,10 @@
                         <div class="label">Rekord</div>
                         <div id="highScore" class="value">0</div>
                     </div>
+                    <div class="stat-box mt-16">
+                        <div class="label">Czas</div>
+                        <div id="time" class="value">0:00</div>
+                    </div>
                 </div>
 
                 <div class="tetris-wrapper">
@@ -61,6 +65,7 @@
                     <div id="tetris-menu" class="modal">
                         <h2 id="menu-title">Tetris</h2>
                         <p id="menu-instruction">Enter – rozpocznij</p>
+                        <p id="menu-extra" class="menu-extra"></p>
                     </div>
                 </div>
 
@@ -98,16 +103,26 @@
                     <h3>Sterowanie</h3>
                     <ul>
                         <li><strong>← / →</strong> – Ruch w lewo / prawo</li>
-                        <li><strong>↑</strong> – Obrót klocka</li>
+                        <li><strong>↑ / X</strong> – Obrót w prawo, <strong>Z</strong> – obrót w lewo</li>
                         <li><strong>↓</strong> – Przyspieszenie opadania</li>
                         <li><strong>Spacja</strong> – Natychmiastowy upadek (Hard Drop)</li>
                         <li><strong>C</strong> – Przetrzymanie klocka (Hold)</li>
-                        <li><strong>P</strong> – Pauza</li>
+                        <li><strong>P</strong> – Pauza (w pauzie <strong>R</strong> – zacznij od nowa)</li>
+                        <li><strong>Telefon</strong> – dotknięcie planszy: obrót, przeciągnięcie: ruch, machnięcie w dół: Hard Drop, w górę: Hold</li>
+                        <li><strong>Punkty</strong> – T-spiny, combo i Back-to-Back dają bonusy. Skórki odblokowujesz łączną liczbą linii.</li>
                         <li><strong>Enter / ↵</strong> – Start</li>
                     </ul>
                 </div>
 
                 <div class="audio-settings mt-16">
+                    <div class="volume-control select-control">
+                        <label for="modeSelect">Tryb gry</label>
+                        <select id="modeSelect"></select>
+                    </div>
+                    <div class="volume-control select-control">
+                        <label for="skinSelect">Skórka klocków</label>
+                        <select id="skinSelect"></select>
+                    </div>
                     <div class="volume-control">
                         <label for="volume-music">Głośność muzyki</label>
                         <input id="volume-music" type="range" min="0" max="1" step="0.01" value="0.1">
