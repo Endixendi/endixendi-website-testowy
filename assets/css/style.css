@@ -35,6 +35,8 @@ body {
     line-height: 1.5;
     min-height: 100vh;
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
     overflow-x: clip;
     color-scheme: dark;
 }
@@ -307,8 +309,10 @@ header {
 
 main {
     max-width: var(--maxw);
+    width: 100%;
     margin: 28px auto;
     padding: 0 16px;
+    flex: 1 0 auto;
 }
 
 .hero {
