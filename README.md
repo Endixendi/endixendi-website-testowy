@@ -97,7 +97,6 @@ Wszystko zostaje wyłącznie na urządzeniu użytkownika (szczegóły w `polityk
 │   │   ├── fullscreen.js     # Wspólna obsługa pełnego ekranu w grach
 │   │   ├── gallery.js        # Siatka zdjęć, podgląd kinowy, lightbox
 │   │   ├── pc-mode.js        # Silnik symulatora PC Mode
-│   │   ├── progress-reset.js # Wspólny przycisk resetu rekordu i osiągnięć w grach (ładować jako ostatni)
 │   │   ├── script.js         # Wspólna logika: ładowanie menu/stopki, nawigacja, motywy, efekty sezonowe, panele
 │   │   ├── shooter.js        # Silnik gry Shooter
 │   │   ├── storage.js        # Bezpieczny wrapper localStorage (ładować jako pierwszy)
