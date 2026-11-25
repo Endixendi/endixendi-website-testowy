@@ -350,8 +350,9 @@
     -webkit-appearance: none;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    padding: 3px 5px;
+    gap: 1px;
+    padding: 2px 3px;
+	min-width: 0;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--glass);
