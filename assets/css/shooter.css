@@ -680,7 +680,7 @@
     .shooter-stage:fullscreen #heatBar,
     .shooter-stage.is-fullscreen #healthBar,
     .shooter-stage:fullscreen #healthBar {
-        height: clamp(56px, 34%, 100px);
+        height: clamp(20px, 50%, 50px);
     }
 
     /* menu startowe i podsumowanie w kompaktowej wersji (plansza jest niska) */
