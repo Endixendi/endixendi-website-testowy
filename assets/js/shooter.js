@@ -39,6 +39,7 @@
     const toastEl = $('achievementToast');
     const achievementsList = $('achievementsList');
     const achievementsProgress = $('achievementsProgress');
+    const achievementsStats = $('achievementsStats');
 
     const difficultyChoices = $('difficultyChoices');
     const shipChoices = $('shipChoices');
@@ -123,14 +124,19 @@
 
     const ACHIEVEMENTS = [
         { id: 'first_blood', icon: '🎯', name: 'Pierwsza krew', desc: 'Zestrzel pierwszego wroga.' },
-        { id: 'centurion', icon: '💯', name: 'Setka', desc: 'Zestrzel łącznie 100 wrogów.' },
+        { id: 'centurion', icon: '💯', name: 'Setka', desc: 'Zestrzel łącznie 100 wrogów.',
+          goal: 100, hint: 'Zestrzelone wrogi', progress: () => lifetime.kills },
         { id: 'cool_head', icon: '🧊', name: 'Zimna głowa', desc: 'Ukończ falę bez przegrzania broni.' },
         { id: 'untouchable', icon: '✨', name: 'Nietykalny', desc: 'Ukończ falę bez utraty zdrowia.' },
-        { id: 'combo_master', icon: '🔥', name: 'Mistrz combo', desc: 'Zbuduj serię 20 trafień (mnożnik x5).' },
+        { id: 'combo_master', icon: '🔥', name: 'Mistrz combo', desc: 'Zbuduj serię 20 trafień (mnożnik x5).',
+          goal: 20, hint: 'Najlepsza seria', progress: () => lifetime.bestCombo },
         { id: 'boss_slayer', icon: '👾', name: 'Pogromca bossa', desc: 'Pokonaj bossa.' },
-        { id: 'boss_all', icon: '🏆', name: 'Łowca bossów', desc: 'Pokonaj wszystkie 3 rodzaje bossów.' },
-        { id: 'veteran', icon: '🎖️', name: 'Weteran', desc: 'Dotrzyj do 10. fali.' },
-        { id: 'collector', icon: '🎁', name: 'Kolekcjoner', desc: 'Zbierz łącznie 25 power-upów.' },
+        { id: 'boss_all', icon: '🏆', name: 'Łowca bossów', desc: 'Pokonaj wszystkie 3 rodzaje bossów.',
+          goal: 3, hint: 'Rodzaje bossów', progress: () => lifetime.bossStyles.length },
+        { id: 'veteran', icon: '🎖️', name: 'Weteran', desc: 'Dotrzyj do 10. fali.',
+          goal: 10, hint: 'Najlepsza fala', progress: () => lifetime.bestWave },
+        { id: 'collector', icon: '🎁', name: 'Kolekcjoner', desc: 'Zbierz łącznie 25 power-upów.',
+          goal: 25, hint: 'Power-upy', progress: () => lifetime.powerups },
         { id: 'perfect_boss', icon: '🛡️', name: 'Perfekcjonista', desc: 'Pokonaj bossa, nie tracąc ani punktu zdrowia w całej fali.' },
         { id: 'hard_veteran', icon: '💀', name: 'Twardziel', desc: 'Dotrzyj do 10. fali na poziomie Trudnym.' },
         { id: 'close_call', icon: '😅', name: 'Na krawędzi', desc: 'Ukończ falę z mniej niż 10% zdrowia.' }
@@ -887,21 +893,44 @@
             icon.className = 'achievement-icon';
             icon.textContent = done ? a.icon : '🔒';
 
-            const box = document.createElement('span');
+            const body = document.createElement('span');
+            body.className = 'achievement-body';
             const name = document.createElement('strong');
             name.textContent = a.name;
             const desc = document.createElement('small');
             desc.textContent = a.desc;
-            box.appendChild(name);
-            box.appendChild(document.createElement('br'));
-            box.appendChild(desc);
+            body.appendChild(name);
+            body.appendChild(desc);
+
+            // Pasek postępu (tylko osiągnięcia liczone łącznie)
+            if (!done && a.goal && a.progress) {
+                const cur = Math.min(a.goal, a.progress());
+                const bar = document.createElement('span');
+                bar.className = 'achievement-bar';
+                const fill = document.createElement('span');
+                fill.className = 'achievement-bar-fill';
+                fill.style.width = Math.round((cur / a.goal) * 100) + '%';
+                bar.appendChild(fill);
+                const hint = document.createElement('small');
+                hint.textContent = a.hint + ': ' + cur.toLocaleString('pl-PL') + ' / ' + a.goal.toLocaleString('pl-PL');
+                body.appendChild(bar);
+                body.appendChild(hint);
+            }
 
             li.appendChild(icon);
-            li.appendChild(box);
+            li.appendChild(body);
             achievementsList.appendChild(li);
         });
         if (achievementsProgress) {
             achievementsProgress.textContent = 'Odblokowano: ' + unlocked.size + ' / ' + ACHIEVEMENTS.length;
+        }
+        if (achievementsStats) {
+            achievementsStats.textContent =
+                'Rozegrane gry: ' + lifetime.games +
+                ' • Zestrzelone wrogi: ' + lifetime.kills +
+                ' • Pokonane bossy: ' + lifetime.bossKills +
+                ' • Najlepsza fala: ' + lifetime.bestWave +
+                ' • Najlepsze combo: x' + lifetime.bestCombo;
         }
     }
 
@@ -1745,6 +1774,7 @@
         }
         if (resetProgressBtn) {
             resetProgressBtn.addEventListener('click', () => {
+                if (state.running && !state.paused && !state.gameOver) setPaused(true);
                 if (!window.confirm('Na pewno wyzerować rekord, statystyki i osiągnięcia w Shooterze?')) return;
                 shooterHighScore = 0;
                 unlocked.clear();

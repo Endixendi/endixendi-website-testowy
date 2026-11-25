@@ -40,6 +40,21 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+}
+
+/* Poziom, zasady i potwierdzanie strzału: zawijają się w kolejne wiersze zamiast rozpychać stronę */
+.settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.settings-row .ghost-select {
+    max-width: 100%;
 }
 
 .ghost-select {
@@ -213,124 +228,6 @@
 }
 
 /* ==========================================================================
-   TRYB PEŁNOEKRANOWY (Natywny Fullscreen API + Fallback dla iOS)
-   ========================================================================== */
-
-.game-wrapper.is-fullscreen,
-.game-wrapper:fullscreen {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100dvh;
-    max-width: none;
-    margin: 0;
-    border-radius: 0;
-    background: #0a0c10;
-    z-index: 99999;
-    padding: 12px 16px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 10px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Duże ekrany / PC w poziomie */
-@media (min-width: 1024px) and (orientation: landscape) {
-    .game-wrapper.is-fullscreen,
-    .game-wrapper:fullscreen {
-        justify-content: space-between;
-        padding: 16px 24px;
-    }
-
-    .game-wrapper.is-fullscreen .boards-container,
-    .game-wrapper:fullscreen .boards-container {
-        flex-wrap: nowrap;
-        gap: min(6vw, 72px);
-        margin: auto 0;
-    }
-
-    .game-wrapper.is-fullscreen .battleship-grid,
-    .game-wrapper:fullscreen .battleship-grid {
-        --cell-size: clamp(28px, min(4.2vw, calc((100dvh - 260px) / 10)), 44px);
-        grid-template-columns: repeat(10, var(--cell-size));
-        grid-template-rows: repeat(10, var(--cell-size));
-    }
-
-    .game-wrapper.is-fullscreen .cell,
-    .game-wrapper:fullscreen .cell {
-        width: var(--cell-size);
-        height: var(--cell-size);
-    }
-
-    .game-wrapper.is-fullscreen .log-content,
-    .game-wrapper:fullscreen .log-content {
-        height: 95px;
-    }
-}
-
-/* Telefony i mniejsze ekrany (zarówno w pionie, jak i po obróceniu w poziom) */
-@media (max-width: 1023px) {
-    .game-wrapper.is-fullscreen .game-controls-bar,
-    .game-wrapper:fullscreen .game-controls-bar {
-        flex-direction: row;
-        align-items: center;
-        gap: 8px;
-        padding-bottom: 8px;
-        margin-bottom: 4px;
-    }
-
-    .game-wrapper.is-fullscreen .boards-container,
-    .game-wrapper:fullscreen .boards-container {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .game-wrapper.is-fullscreen .board-header,
-    .game-wrapper:fullscreen .board-header {
-        margin-bottom: 4px;
-        padding-bottom: 2px;
-    }
-
-    .game-wrapper.is-fullscreen .battleship-grid,
-    .game-wrapper:fullscreen .battleship-grid {
-        --mobile-fs-cell: clamp(16px, min(4.8vw, calc((100dvh - 210px) / 10)), 25px);
-        grid-template-columns: repeat(10, var(--mobile-fs-cell));
-        grid-template-rows: repeat(10, var(--mobile-fs-cell));
-        padding: 3px;
-    }
-
-    .game-wrapper.is-fullscreen .cell,
-    .game-wrapper:fullscreen .cell {
-        width: var(--mobile-fs-cell);
-        height: var(--mobile-fs-cell);
-    }
-
-    .game-wrapper.is-fullscreen .game-log-container,
-    .game-wrapper:fullscreen .game-log-container {
-        flex: 0 0 auto;
-        margin-top: 6px;
-        border-color: var(--accent);
-        display: block;
-        visibility: visible;
-        opacity: 1;
-    }
-
-    .game-wrapper.is-fullscreen .log-content,
-    .game-wrapper:fullscreen .log-content {
-        height: 75px;
-        font-size: 12px;
-        padding: 6px 8px;
-        display: flex;
-        visibility: visible;
-        opacity: 1;
-    }
-}
-
-/* ==========================================================================
    Terminal Logów
    ========================================================================== */
 
@@ -397,29 +294,6 @@
     color: #ff0033 !important;
 }
 
-/* ==========================================================================
-   Responsywność (Media Queries)
-   ========================================================================== */
-
-@media (max-width: 768px) {
-    .game-controls-bar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .battleship-grid {
-        --cell: min(26px, calc((100vw - 100px) / 10));
-    }
-    
-    .boards-container {
-        gap: 20px;
-    }
-
-    .audio-settings {
-        width: 100%;
-    }
-}
 /* Własna plansza nie jest klikalna */
 .player-grid .cell {
     cursor: default;
@@ -650,65 +524,389 @@
 }
 
 /* ==========================================================================
-   LISTA OSIĄGNIĘĆ (taki sam wygląd jak w grze Dino)
+   ROZMIAR KOMÓREK I UKŁAD NA TELEFONACH
+   --cell-base to rozmiar komórki dla danego ekranu, a --cell faktycznie używany przez planszę
+   (własna plansza podczas gry bywa mniejsza). Plansza = 10 komórek + osie i ramki (~46 px).
    ========================================================================== */
 
-.achievements-list {
-    list-style: none;
-    padding: 0;
-    margin: 14px 0 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 10px;
+.game-wrapper {
+    --cell-base: 32px;
+    --cell: var(--cell-base);
 }
 
-.achievement {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* Lista floty nie rozpycha planszy: jej szerokość wynika z planszy, a ikony zawijają się w kolejne wiersze */
+.fleet-tracker {
+    width: 0;
+    min-width: 100%;
+}
+
+/* Telefon w pionie i małe ekrany */
+@media (max-width: 768px) {
+    .game-wrapper {
+        --cell-base: min(30px, calc((100vw - 120px) / 10));
+    }
+
+    .game-controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .game-controls-bar .buttons {
+        width: 100%;
+    }
+
+    /* Poziom i Zasady obok siebie (etykieta nad listą), "Potwierdź strzał" pod spodem */
+    .settings-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 10px;
+        width: 100%;
+    }
+
+    .settings-row .difficulty-box {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+    }
+
+    .settings-row .ghost-select {
+        width: 100%;
+    }
+
+    .settings-row .bs-check {
+        grid-column: 1 / -1;
+    }
+
+    .game-controls-bar .buttons .btn,
+    .game-controls-bar .buttons .ghost {
+        padding: 8px 12px;
+        font-size: 0.88rem;
+    }
+
+    .boards-container {
+        gap: 18px;
+    }
+
+    .audio-settings {
+        width: 100%;
+    }
+}
+
+/* Po starcie rozstawianie jest zakończone, więc "Losuj Ustawienie" znika */
+.game-wrapper.is-playing #btn-randomize {
+    display: none;
+}
+
+/* Podczas gry ustawienia są zablokowane, więc na małych ekranach znikają (więcej miejsca na plansze) */
+@media (max-width: 768px), (max-height: 620px) {
+    .game-wrapper.is-playing .settings-row {
+        display: none;
+    }
+}
+
+/* Plansze jedna pod drugą: ważniejsza w danej chwili jest duża, druga to podgląd
+   - rozstawianie: duża własna plansza, wroga mała
+   - walka: duża plansza wroga (tam się strzela), własna jako podgląd */
+@media (max-width: 768px) and (orientation: portrait) {
+    .game-wrapper:not(.is-playing) .enemy-grid {
+        --cell: calc(var(--cell-base) * 0.55);
+    }
+
+    .game-wrapper.is-playing .player-grid {
+        --cell: calc(var(--cell-base) * 0.72);
+    }
+}
+
+@media (max-width: 400px) {
+    .fleet-chip .seg {
+        width: 7px;
+        height: 7px;
+    }
+}
+
+/* Telefon w poziomie, zwykły widok: obie plansze obok siebie i mieszczą się w wysokości ekranu */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 620px) {
+    .game-wrapper:not(.is-fullscreen):not(:fullscreen) {
+        --cell-base: clamp(18px, min(calc((100vw - 190px) / 20), calc((100dvh - 120px) / 10)), 32px);
+        padding: 10px 14px;
+    }
+
+    .game-wrapper:not(.is-fullscreen):not(:fullscreen) .boards-container {
+        flex-wrap: nowrap;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .game-wrapper:not(.is-fullscreen):not(:fullscreen) .board-box {
+        flex: 0 0 auto;
+    }
+
+    .game-wrapper:not(.is-fullscreen):not(:fullscreen) .game-log-container {
+        margin-top: 10px;
+    }
+
+    .game-wrapper:not(.is-fullscreen):not(:fullscreen) .log-content {
+        height: 80px;
+    }
+}
+
+/* ==========================================================================
+   TRYB PEŁNOEKRANOWY (Natywny Fullscreen API + Fallback dla iOS)
+   Kontener to kolumna: pasek sterowania / plansze (wypełniają resztę) / dziennik
+   ========================================================================== */
+
+.game-wrapper.is-fullscreen,
+.game-wrapper:fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    background: #0a0c10;
+    z-index: 99999;
     padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.02);
-    opacity: 0.65;
-}
-
-.achievement.unlocked {
-    opacity: 1;
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-.achievement-icon {
-    font-size: 1.6rem;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.achievement-body {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-    flex: 1;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    /* pion, rozstawianie: duża własna plansza + mała wroga (rozmiar ogranicza szerokość i wysokość ekranu) */
+    --cell-base: clamp(20px, min(calc((100vw - 70px) / 10), calc((100dvh - 410px) / 15)), 36px);
 }
 
-.achievement-body small {
-    color: var(--muted);
+/* pion, walka: duża plansza wroga + mała własna */
+@media (orientation: portrait) {
+    .game-wrapper.is-fullscreen,
+    .game-wrapper:fullscreen {
+        --cell-base: clamp(16px, min(calc((100vw - 70px) / 10), calc((100dvh - 455px) / 15.5)), 36px);
+    }
+
+    .game-wrapper.is-fullscreen.is-playing,
+    .game-wrapper:fullscreen.is-playing {
+        --cell-base: clamp(16px, min(calc((100vw - 70px) / 10), calc((100dvh - 350px) / 17.2)), 36px);
+    }
+
+    /* rozstawianie: dziennik i lista floty wroga są zbędne, a liczy się każdy piksel wysokości */
+    .game-wrapper.is-fullscreen:not(.is-playing) .game-log-container,
+    .game-wrapper:fullscreen:not(.is-playing) .game-log-container,
+    .game-wrapper.is-fullscreen:not(.is-playing) .enemy-fleet,
+    .game-wrapper:fullscreen:not(.is-playing) .enemy-fleet {
+        display: none;
+    }
+
+    @media (max-height: 700px) {
+        .game-wrapper.is-fullscreen:not(.is-playing) .board-box:nth-child(2),
+        .game-wrapper:fullscreen:not(.is-playing) .board-box:nth-child(2) {
+            display: none;
+        }
+    }
+
+    /* walka: status i przyciski w jednym wierszu, bez listy floty własnej i nagłówka dziennika */
+    .game-wrapper.is-fullscreen.is-playing .game-controls-bar,
+    .game-wrapper:fullscreen.is-playing .game-controls-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 6px;
+    }
+
+    .game-wrapper.is-fullscreen.is-playing .game-controls-bar .buttons,
+    .game-wrapper:fullscreen.is-playing .game-controls-bar .buttons {
+        width: auto;
+    }
+
+    .game-wrapper.is-fullscreen.is-playing .player-fleet,
+    .game-wrapper:fullscreen.is-playing .player-fleet,
+    .game-wrapper.is-fullscreen.is-playing .log-header,
+    .game-wrapper:fullscreen.is-playing .log-header {
+        display: none;
+    }
+
+    .game-wrapper.is-fullscreen.is-playing .log-content,
+    .game-wrapper:fullscreen.is-playing .log-content {
+        height: 52px;
+    }
 }
 
-.achievement-bar {
-    display: block;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-    margin-top: 2px;
+.game-wrapper.is-fullscreen .game-controls-bar,
+.game-wrapper:fullscreen .game-controls-bar {
+    padding-bottom: 8px;
+    margin-bottom: 0;
+    gap: 6px 12px;
 }
 
-.achievement-bar-fill {
-    display: block;
-    height: 100%;
-    background: var(--accent);
-    border-radius: 3px;
+.game-wrapper.is-fullscreen .boards-container,
+.game-wrapper:fullscreen .boards-container {
+    flex: 1 1 auto;
+    margin-top: 0;
+    gap: 10px 40px;
+    align-content: center;
+    align-items: center;
+}
+
+/* w pionie podczas walki plansza wroga jest na górze */
+@media (orientation: portrait) {
+    .game-wrapper.is-fullscreen.is-playing .board-box:nth-child(2),
+    .game-wrapper:fullscreen.is-playing .board-box:nth-child(2) {
+        order: -1;
+    }
+}
+
+.game-wrapper.is-fullscreen .board-header,
+.game-wrapper:fullscreen .board-header {
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+}
+
+.game-wrapper.is-fullscreen .game-log-container,
+.game-wrapper:fullscreen .game-log-container {
+    flex: 0 0 auto;
+    margin-top: 0;
+}
+
+.game-wrapper.is-fullscreen .log-content,
+.game-wrapper:fullscreen .log-content {
+    height: 60px;
+    font-size: 12px;
+    padding: 6px 8px;
+}
+
+/* Poziom (telefon i tablet): plansze obok siebie, komórki skalują się do wysokości i szerokości */
+@media (orientation: landscape) {
+    .game-wrapper.is-fullscreen,
+    .game-wrapper:fullscreen {
+        --cell-base: clamp(16px, min(calc((100vw - 24px - 108px) / 20), calc((100dvh - 250px) / 10)), 44px);
+    }
+
+    .game-wrapper.is-fullscreen .boards-container,
+    .game-wrapper:fullscreen .boards-container {
+        flex-wrap: nowrap;
+        gap: min(5vw, 56px);
+    }
+}
+
+/* Niski ekran w poziomie (telefon): pasek sterowania zmienia się w kolumnę po lewej,
+   a cała reszta wysokości idzie na plansze i dziennik */
+@media (orientation: landscape) and (max-height: 620px) {
+    .game-wrapper.is-fullscreen,
+    .game-wrapper:fullscreen {
+        --cell-base: clamp(16px, min(calc((100vw - 330px) / 20), calc((100dvh - 128px) / 10)), 36px);
+        display: grid;
+        grid-template-columns: 176px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "bar boards"
+            "bar log";
+        gap: 6px 12px;
+        padding: 6px 10px;
+        overflow: hidden;
+    }
+
+    .game-wrapper.is-fullscreen .game-controls-bar,
+    .game-wrapper:fullscreen .game-controls-bar {
+        grid-area: bar;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 8px;
+        margin: 0;
+        padding: 0 10px 0 0;
+        border-bottom: 0;
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+    }
+
+    .game-wrapper.is-fullscreen:not(.is-playing) .settings-row,
+    .game-wrapper:fullscreen:not(.is-playing) .settings-row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .game-wrapper.is-fullscreen .settings-row .difficulty-box,
+    .game-wrapper:fullscreen .settings-row .difficulty-box {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .game-wrapper.is-fullscreen .settings-row .ghost-select,
+    .game-wrapper:fullscreen .settings-row .ghost-select {
+        width: 104px;
+        min-width: 0;
+        padding: 4px 6px;
+        font-size: 0.82rem;
+    }
+
+    /* przyciski w siatce 2 kolumn: Obróć i Wyczyść obok siebie, reszta na całą szerokość */
+    .game-wrapper.is-fullscreen .game-controls-bar .buttons,
+    .game-wrapper:fullscreen .game-controls-bar .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+        width: 100%;
+        gap: 6px;
+    }
+
+    .game-wrapper.is-fullscreen .buttons #btn-randomize,
+    .game-wrapper:fullscreen .buttons #btn-randomize,
+    .game-wrapper.is-fullscreen .buttons #btn-start,
+    .game-wrapper:fullscreen .buttons #btn-start,
+    .game-wrapper.is-fullscreen .buttons #btn-restart,
+    .game-wrapper:fullscreen .buttons #btn-restart,
+    .game-wrapper.is-fullscreen .buttons #btn-fullscreen,
+    .game-wrapper:fullscreen .buttons #btn-fullscreen {
+        grid-column: 1 / -1;
+    }
+
+    .game-wrapper.is-fullscreen .game-controls-bar .buttons .btn,
+    .game-wrapper.is-fullscreen .game-controls-bar .buttons .ghost,
+    .game-wrapper:fullscreen .game-controls-bar .buttons .btn,
+    .game-wrapper:fullscreen .game-controls-bar .buttons .ghost {
+        padding: 6px 10px;
+        font-size: 0.82rem;
+    }
+
+    .game-wrapper.is-fullscreen .boards-container,
+    .game-wrapper:fullscreen .boards-container {
+        grid-area: boards;
+        gap: 16px;
+        margin: 0;
+    }
+
+    .game-wrapper.is-fullscreen .game-log-container,
+    .game-wrapper:fullscreen .game-log-container {
+        grid-area: log;
+    }
+
+    /* lista floty zajmuje cenną wysokość - zostaje liczba statków w nagłówku planszy */
+    .game-wrapper.is-fullscreen .fleet-tracker,
+    .game-wrapper:fullscreen .fleet-tracker {
+        display: none;
+    }
+
+    .game-wrapper.is-fullscreen .board-box .battleship-grid,
+    .game-wrapper:fullscreen .board-box .battleship-grid {
+        margin-top: 14px;
+        margin-left: 14px;
+    }
+
+    .game-wrapper.is-fullscreen .log-header,
+    .game-wrapper:fullscreen .log-header {
+        display: none;
+    }
+
+    .game-wrapper.is-fullscreen .log-content,
+    .game-wrapper:fullscreen .log-content {
+        height: 44px;
+        padding: 4px 8px;
+    }
 }

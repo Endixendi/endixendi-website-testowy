@@ -52,9 +52,9 @@ const DIFFICULTIES = [
 const DIFF_NAMES = Object.fromEntries(DIFFICULTIES);
 
 const RULES = [
-    ['classic', 'Klasyczne (trafienie = kolejny strzał)'],
+    ['classic', 'Klasyczne'],
     ['noextra', 'Bez dodatkowego ruchu'],
-    ['salvo', 'Salwa (tyle strzałów, ile statków)']
+    ['salvo', 'Salwa']
 ];
 
 // Stan Gry
@@ -263,6 +263,7 @@ function resetData() {
     btnRestart.style.display = 'none';
     btnRandomize.disabled = false;
     computerGrid.classList.add('locked');
+    battleshipContainer.classList.remove('is-playing');
     turnStatus.textContent = "Rozstawianie Floty";
     turnStatus.style.color = "";
 
@@ -1187,6 +1188,13 @@ function playAudio(type) {
 
 // Sekcja jest dodawana skryptem: przed "Źródłami dźwięków", a gdy jej nie ma - zaraz pod grą
 function buildAchievementsSection() {
+    if (document.getElementById('achievementsList')) {
+        // sekcja jest już w HTML-u
+        syncAchievements();
+        renderAchievements();
+        return;
+    }
+
     const section = document.createElement('section');
     section.id = 'battleship-achievements';
     section.className = 'card mt-22';
@@ -1207,6 +1215,16 @@ function buildAchievementsSection() {
     ul.className = 'achievements-list';
     section.appendChild(ul);
 
+    const actions = document.createElement('div');
+    actions.className = 'achievements-actions';
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.id = 'resetProgressBtn';
+    resetBtn.className = 'ghost';
+    resetBtn.textContent = 'Wyzeruj rekord i osiągnięcia';
+    actions.appendChild(resetBtn);
+    section.appendChild(actions);
+
     const credits = document.getElementById('audio-credits');
     if (credits && credits.parentElement) {
         credits.parentElement.insertBefore(section, credits);
@@ -1216,6 +1234,19 @@ function buildAchievementsSection() {
     }
 
     syncAchievements();
+    renderAchievements();
+}
+
+// Zerowanie statystyk i osiągnięć (ta sama opcja i komunikat co w pozostałych grach)
+function resetProgress() {
+    if (!window.confirm('Na pewno wyzerować rekord, statystyki i osiągnięcia w Statkach?')) return;
+
+    const removeKey = k => { try { store.remove(k); } catch (e) { /* brak zapisu */ } };
+
+    Object.assign(stats, { games: 0, wins: 0, losses: 0, shots: 0, hits: 0, streak: 0, bestStreak: 0, byDiff: {}, bestShots: {} });
+    removeKey(STATS_KEY);
+    unlockedAch.clear();
+    removeKey(ACH_KEY);
     renderAchievements();
 }
 
@@ -1291,68 +1322,92 @@ function renderAchievements() {
 
 /* --- DODATKOWY INTERFEJS (wstrzykiwany skryptem) --- */
 
-function makeTracker(grid) {
+function makeTracker(grid, side) {
     const el = document.createElement('div');
-    el.className = 'fleet-tracker';
+    el.className = 'fleet-tracker ' + side;
     grid.parentElement.insertBefore(el, grid);
     return el;
 }
 
-function injectUI() {
-    // Przyciski obrotu i czyszczenia (obok "Losuj")
-    const btnClass = btnRandomize.className;
-    btnRotate = document.createElement('button');
-    btnRotate.type = 'button';
-    btnRotate.className = btnClass;
-    btnRotate.textContent = 'Obróć (R)';
-    insertAfter(btnRandomize, btnRotate);
+// Elementy z HTML-a; gdy ich brakuje (starsza wersja strony), skrypt tworzy je sam
+function getOrCreate(id, create) {
+    let el = document.getElementById(id);
+    if (!el) el = create();
+    return el;
+}
 
-    btnClear = document.createElement('button');
-    btnClear.type = 'button';
-    btnClear.className = btnClass;
-    btnClear.textContent = 'Wyczyść';
-    insertAfter(btnRotate, btnClear);
-
-    // Poziomy trudności (w pliku HTML mogły być tylko niektóre, więc odtwarzamy pełną listę)
-    const prevDiff = loadString(DIFF_KEY, difficultySelect.value || 'easy');
-    difficultySelect.innerHTML = '';
-    DIFFICULTIES.forEach(([id, name]) => {
+function fillSelect(select, items) {
+    if (select.options && select.options.length === items.length) return; // opcje są już w HTML
+    select.innerHTML = '';
+    items.forEach(([id, name]) => {
         const opt = document.createElement('option');
         opt.value = id;
         opt.textContent = name;
-        difficultySelect.appendChild(opt);
+        select.appendChild(opt);
     });
+}
+
+function injectUI() {
+    // Przyciski obrotu i czyszczenia (obok "Losuj")
+    btnRotate = getOrCreate('btn-rotate', () => {
+        const b = document.createElement('button');
+        b.id = 'btn-rotate';
+        b.type = 'button';
+        b.className = btnRandomize.className;
+        b.textContent = 'Obróć (R)';
+        insertAfter(btnRandomize, b);
+        return b;
+    });
+    btnClear = getOrCreate('btn-clear', () => {
+        const b = document.createElement('button');
+        b.id = 'btn-clear';
+        b.type = 'button';
+        b.className = btnRandomize.className;
+        b.textContent = 'Wyczyść';
+        insertAfter(btnRotate, b);
+        return b;
+    });
+
+    // Poziomy trudności
+    const prevDiff = loadString(DIFF_KEY, difficultySelect.value || 'easy');
+    fillSelect(difficultySelect, DIFFICULTIES);
     difficultySelect.value = DIFF_NAMES[prevDiff] ? prevDiff : 'easy';
     difficultySelect.addEventListener('change', () => safeSet(DIFF_KEY, difficultySelect.value));
 
     // Wybór zasad
-    const lbl = document.createElement('label');
-    lbl.textContent = 'Zasady:';
-    lbl.htmlFor = 'rules-select';
-    lbl.className = 'bs-label';
-    insertAfter(difficultySelect, lbl);
+    rulesSelect = getOrCreate('rules-select', () => {
+        const lbl = document.createElement('label');
+        lbl.textContent = 'Zasady:';
+        lbl.htmlFor = 'rules-select';
+        lbl.className = 'bs-label';
+        insertAfter(difficultySelect, lbl);
 
-    rulesSelect = document.createElement('select');
-    rulesSelect.id = 'rules-select';
-    rulesSelect.className = difficultySelect.className;
-    RULES.forEach(([id, name]) => {
-        const opt = document.createElement('option');
-        opt.value = id;
-        opt.textContent = name;
-        rulesSelect.appendChild(opt);
+        const sel = document.createElement('select');
+        sel.id = 'rules-select';
+        sel.className = difficultySelect.className;
+        insertAfter(lbl, sel);
+        return sel;
     });
+    fillSelect(rulesSelect, RULES);
     const prevRules = loadString(RULES_KEY, 'classic');
     rulesSelect.value = RULES.some(r => r[0] === prevRules) ? prevRules : 'classic';
     rulesSelect.addEventListener('change', () => safeSet(RULES_KEY, rulesSelect.value));
-    insertAfter(lbl, rulesSelect);
 
     // Potwierdzanie strzału (domyślnie włączone na ekranach dotykowych)
     const coarse = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
-    const confirmLabel = document.createElement('label');
-    confirmLabel.className = 'bs-check';
-    confirmShotEl = document.createElement('input');
-    confirmShotEl.type = 'checkbox';
-    confirmShotEl.id = 'confirm-shot';
+    confirmShotEl = getOrCreate('confirm-shot', () => {
+        const label = document.createElement('label');
+        label.className = 'bs-check';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'confirm-shot';
+        label.appendChild(input);
+        const text = document.createElement('span');
+        text.textContent = ' Potwierdź strzał';
+        label.appendChild(text);
+        insertAfter(rulesSelect, label);
+        return input;
+    });
     const savedConfirm = safeGet(CONFIRM_KEY);
     confirmShotEl.checked = savedConfirm === null || savedConfirm === undefined
         ? coarse
@@ -1361,15 +1416,10 @@ function injectUI() {
         safeSet(CONFIRM_KEY, confirmShotEl.checked ? '1' : '0');
         clearAim();
     });
-    confirmLabel.appendChild(confirmShotEl);
-    const confirmText = document.createElement('span');
-    confirmText.textContent = ' Potwierdź strzał';
-    confirmLabel.appendChild(confirmText);
-    insertAfter(rulesSelect, confirmLabel);
 
     // Listy floty nad planszami
-    playerTracker = makeTracker(playerGrid);
-    enemyTracker = makeTracker(computerGrid);
+    playerTracker = makeTracker(playerGrid, 'player-fleet');
+    enemyTracker = makeTracker(computerGrid, 'enemy-fleet');
 
     // Dostępność
     turnStatus.setAttribute('aria-live', 'polite');
@@ -1496,6 +1546,11 @@ btnRandomize.addEventListener('click', () => {
 window.addEventListener('load', () => {
     injectUI();
 
+    const resetProgressBtn = document.getElementById('resetProgressBtn');
+    if (resetProgressBtn) {
+        resetProgressBtn.addEventListener('click', resetProgress);
+    }
+
     btnRotate.addEventListener('click', rotatePlacement);
     btnClear.addEventListener('click', () => {
         if (!isSetupPhase()) return;
@@ -1514,6 +1569,7 @@ window.addEventListener('load', () => {
         }
 
         gameState.active = true;
+        battleshipContainer.classList.add('is-playing');
         gameState.difficulty = difficultySelect.value;
         gameState.rules = rulesSelect.value;
         gm = newGm();

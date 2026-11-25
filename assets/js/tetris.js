@@ -412,6 +412,31 @@ function syncAchievements() {
     if (changed) saveJSON(ACH_KEY, Array.from(unlockedAch));
 }
 
+// Zerowanie rekordów, statystyk i osiągnięć (ta sama opcja i komunikat co w pozostałych grach)
+function resetProgress() {
+    if (running && !gameOver && !paused) togglePause();
+    if (!window.confirm('Na pewno wyzerować rekord, statystyki i osiągnięcia w Tetrisie?')) return;
+
+    const removeKey = k => { try { store.remove(k); } catch (e) { /* brak zapisu */ } };
+
+    Object.keys(MODES).forEach(m => removeKey(bestKey(m)));
+    Object.assign(stats, { games: 0, lines: 0, tetrises: 0, tspins: 0, bestCombo: 0, playSeconds: 0 });
+    removeKey(STATS_KEY);
+    unlockedAch.clear();
+    removeKey(ACH_KEY);
+
+    // Skórki odblokowuje liczba linii, więc po wyzerowaniu wraca Neon
+    refreshSkinOptions();
+    setSkin(currentSkin);
+    store.set(SKIN_KEY, currentSkin);
+
+    refreshBestDisplay(running ? mode : selectedMode);
+    renderAchievements();
+    draw();
+    drawQueue();
+    drawHoldBox();
+}
+
 function formatPlayTime(seconds) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -1707,6 +1732,11 @@ window.addEventListener('load', () => {
     // Osiągnięcia na stronie
     syncAchievements();
     renderAchievements();
+
+    const resetProgressBtn = document.getElementById('resetProgressBtn');
+    if (resetProgressBtn) {
+        resetProgressBtn.addEventListener('click', resetProgress);
+    }
 
     // Lista skórek
     refreshSkinOptions();

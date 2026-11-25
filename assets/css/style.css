@@ -1502,3 +1502,16 @@ a.btn {
     html { scroll-behavior: auto; }
     .seasonal-particle { display: none !important; }
 }
+
+/* ==========================================================================
+   PEŁNY EKRAN GIER (tryb zastępczy z klasą .is-fullscreen, np. iOS bez Fullscreen API)
+   ========================================================================== */
+
+/* Na ekranach do 1200 px main ma z-index: 1 i tworzy własny kontekst nakładania, więc kontener gry
+   (z-index: 99999) był w nim uwięziony, a nagłówek (z-index: 9500) zasłaniał górę planszy.
+   Na czas pełnego ekranu main nie tworzy już kontekstu i gra leży ponad nagłówkiem,
+   pływającym przyciskiem "do góry" oraz paskiem skrótów. */
+body:has(.is-fullscreen) main,
+body:has(.is-fullscreen) #home {
+    z-index: auto;
+}

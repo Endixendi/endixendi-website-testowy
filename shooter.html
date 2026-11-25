@@ -138,14 +138,17 @@
                     <label for="optTouchSens">Czułość sterowania dotykowego</label>
                     <input id="optTouchSens" type="range" min="0.5" max="1.5" step="0.05" value="1">
                 </div>
-                <button type="button" id="resetProgressBtn" class="ghost">Wyzeruj rekord i osiągnięcia</button>
             </div>
         </section>
 
         <section id="shooter-achievements" class="card mt-22">
             <h3>Osiągnięcia</h3>
             <p class="muted" id="achievementsProgress"></p>
+            <p class="muted" id="achievementsStats"></p>
             <ul id="achievementsList" class="achievements-list"></ul>
+            <div class="achievements-actions">
+                <button type="button" id="resetProgressBtn" class="ghost">Wyzeruj rekord i osiągnięcia</button>
+            </div>
         </section>
 
 		<section id="audio-credits" class="card mt-16">

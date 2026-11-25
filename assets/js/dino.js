@@ -341,6 +341,31 @@ function renderAchievements() {
     }
 }
 
+// Zerowanie rekordu, statystyk i osiągnięć (ta sama opcja i komunikat co w pozostałych grach)
+function resetProgress() {
+    if (player && !gameOver && !dying && !paused) setPaused(true);
+    if (!window.confirm('Na pewno wyzerować rekord, statystyki i osiągnięcia w Dino?')) return;
+
+    const removeKey = k => { try { store.remove(k); } catch (e) { /* brak zapisu */ } };
+
+    highScore = 0;
+    removeKey('highScore');
+    highScoreEl.textContent = 0;
+    if (finalHighScoreEl) finalHighScoreEl.textContent = 0;
+
+    Object.assign(stats, { games: 0, crystals: 0, distance: 0, bestTime: 0 });
+    removeKey('dinoStats');
+
+    unlockedAch.clear();
+    removeKey('dinoAch');
+
+    // Skórki odblokowuje rekord, więc po wyzerowaniu wraca Klasyczny
+    refreshSkinOptions();
+    store.set('dinoSkin', currentSkin);
+    redrawIdle();
+    renderAchievements();
+}
+
 function showToast(text, color = '#ffffff') {
     toasts.push({ text, color, t: 0, dur: 3 });
     if (toasts.length > 3) toasts.shift();
@@ -1498,6 +1523,11 @@ window.addEventListener("load", () => {
 
     if (resumeBtn) {
         resumeBtn.addEventListener('click', () => setPaused(false));
+    }
+
+    const resetProgressBtn = document.getElementById('resetProgressBtn');
+    if (resetProgressBtn) {
+        resetProgressBtn.addEventListener('click', resetProgress);
     }
 
     if (skinSelect) {

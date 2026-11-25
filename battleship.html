@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Statki online: bitwa morska z komputerem na trzech poziomach trudności, w tym Cheater.">
+    <meta name="description" content="Statki online: bitwa morska z komputerem na czterech poziomach trudności, w tym Cheater, z ręcznym rozstawianiem floty i trzema zasadami gry.">
     <title>Endixendi - Statki</title>
 
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/games.css">
     <link rel="stylesheet" href="assets/css/battleship.css">
     
     <link rel="icon" href="assets/images/logo-kolo.png" type="image/png">
@@ -38,16 +39,30 @@
                     <div class="status-indicator">
                         <span class="muted">Tura:</span> <span id="turn-status" class="highlight">Oczekiwanie...</span>
                     </div>
-                    <div class="difficulty-box">
-                        <label class="muted">Poziom:</label>
-                        <select id="difficulty-select" class="ghost-select">
-                            <option value="easy">Łatwy</option>
-                            <option value="hard">Trudny</option>
-                            <option value="cheater">Cheater</option>
-                        </select>
+                    <div class="settings-row">
+                        <div class="difficulty-box">
+                            <label class="muted" for="difficulty-select">Poziom:</label>
+                            <select id="difficulty-select" class="ghost-select">
+                                <option value="easy">Łatwy</option>
+                                <option value="medium">Normalny</option>
+                                <option value="hard">Trudny</option>
+                                <option value="cheater">Cheater</option>
+                            </select>
+                        </div>
+                        <div class="difficulty-box">
+                            <label class="muted" for="rules-select">Zasady:</label>
+                            <select id="rules-select" class="ghost-select">
+                                <option value="classic">Klasyczne</option>
+                                <option value="noextra">Bez dodatkowego ruchu</option>
+                                <option value="salvo">Salwa</option>
+                            </select>
+                        </div>
+                        <label class="bs-check"><input type="checkbox" id="confirm-shot"> Potwierdź strzał</label>
                     </div>
                     <div class="buttons">
                         <button id="btn-randomize" class="ghost">Losuj Ustawienie</button>
+                        <button id="btn-rotate" class="ghost">Obróć (R)</button>
+                        <button id="btn-clear" class="ghost">Wyczyść</button>
                         <button id="btn-start" class="btn">Start Gry</button>
                         <button id="btn-restart" class="ghost" style="display:none;">Restart</button>
                         <button id="btn-fullscreen" class="ghost fullscreen-toggle-btn" title="Pełny ekran" aria-label="Pełny ekran">⛶ Pełny ekran</button>
@@ -88,7 +103,9 @@
 				<div class="controls-left">
 					<h3>Zasady i Interfejs</h3>
 						<ul>
-							<li><strong>Rozpoczęcie gry</strong> – Wybierz poziom trudności (Łatwy, Trudny, Cheater), wylosuj swoją flotę przyciskiem <strong>„Losuj Ustawienie”</strong>, a następnie kliknij „Start Gry”.</li>
+							<li><strong>Rozpoczęcie gry</strong> – Wybierz poziom trudności (Łatwy, Normalny, Trudny, Cheater) i zasady, rozstaw flotę, a następnie kliknij „Start Gry”.</li>
+							<li><strong>Rozstawianie floty</strong> – Kliknij pole na swojej planszy, aby postawić kolejny statek. <strong>R</strong>, prawy przycisk myszy lub „Obróć” obraca statek, kliknięcie postawionego statku pozwala go przenieść, a „Losuj Ustawienie” i „Wyczyść” przyspieszają całość.</li>
+							<li><strong>Zasady</strong> – <em>Klasyczne</em>: trafienie daje kolejny strzał. <em>Bez dodatkowego ruchu</em>: strzał co turę. <em>Salwa</em>: w turze oddajesz tyle strzałów, ile masz żywych statków.</li>
 							<li><strong>Prowadzenie ostrzału</strong> – Klikaj na prawą planszę („Komputer”), aby namierzać statki wroga. Czerwone pole z iksem <span style="color: var(--danger, #ff4d6d);">[X]</span> oznacza trafienie, a szara kropka [•] oznacza pudło.</li>
 							<li><strong>Dziennik Pokładowy</strong> – Śledź dolny panel komunikatów, gdzie na bieżąco wyświetlają się współrzędne strzałów oraz meldunki o ruchach Twoich i przeciwnika.</li>
 						</ul>
@@ -108,6 +125,17 @@
 			</div>					
 		</section>				
 	
+		<section id="battleship-achievements" class="card mt-22">
+			<h3>Osiągnięcia</h3>
+			<p class="muted" id="achievementsProgress"></p>
+			<p class="muted" id="achievementsStats"></p>
+			<p class="muted" id="achievementsLevels"></p>
+			<ul id="achievementsList" class="achievements-list"></ul>
+			<div class="achievements-actions">
+				<button type="button" id="resetProgressBtn" class="ghost">Wyzeruj rekord i osiągnięcia</button>
+			</div>
+		</section>
+
 		<section id="audio-credits" class="card mt-16">
 			<div>
 				<h3>Źródła dźwięków i muzyki:</h3>

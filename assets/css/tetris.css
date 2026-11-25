@@ -107,6 +107,14 @@
     display: none;
 }
 
+/* Okno nie może być szersze ani wyższe niż plansza (wąska plansza w poziomie na telefonie) */
+.tetris-wrapper .modal {
+    box-sizing: border-box;
+    max-width: calc(100% - 12px);
+    max-height: calc(100% - 12px);
+    overflow-y: auto;
+}
+
 .modal.game-over-border {
     border-color: var(--danger) !important;
     box-shadow: 0 0 20px rgba(255, 77, 109, 0.4) !important;
@@ -337,11 +345,28 @@
     .tetris-container.is-fullscreen .preview-box,
     .tetris-container:fullscreen .preview-box {
         flex: 1;
+        min-width: 0;
         padding: 4px 6px;
         margin: 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    /* 5 pól statystyk w jednym rzędzie: etykieta nad wartością, żeby nic nie wystawało */
+    .tetris-container.is-fullscreen .stat-box,
+    .tetris-container:fullscreen .stat-box {
+        flex-direction: column;
+        justify-content: center;
+        gap: 1px;
+        padding: 3px 2px;
+    }
+
+    .tetris-container.is-fullscreen .stat-box .value,
+    .tetris-container:fullscreen .stat-box .value {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
     }
 
     .tetris-container.is-fullscreen .stat-box .label,
@@ -418,8 +443,29 @@
     .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel .stat-box,
     .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel .preview-box {
         flex: 1;
+        min-width: 0;
         margin: 0;
     }
+
+    /* 5 statystyk: Wynik i Rekord w pierwszym rzędzie (duże liczby), Linie / Poziom / Czas w drugim */
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel.left-panel {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-areas:
+            "score score score best best best"
+            "lines lines level level time time";
+        gap: 8px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .left-panel .stat-box {
+        padding: 8px 6px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .left-panel .stat-box:nth-child(1) { grid-area: score; }
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .left-panel .stat-box:nth-child(2) { grid-area: lines; }
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .left-panel .stat-box:nth-child(3) { grid-area: level; }
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .left-panel .stat-box:nth-child(4) { grid-area: best; }
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .left-panel .stat-box:nth-child(5) { grid-area: time; }
 }
 /* Sterowanie dotykowe zawsze w osobnym rzędzie pod planszą (nie między planszą a panelem) */
 .tetris-container:not(.is-fullscreen):not(:fullscreen) {
@@ -456,65 +502,98 @@
 }
 
 /* ==========================================================================
-   LISTA OSIĄGNIĘĆ (taki sam wygląd jak w grach Dino i Statki)
+   TELEFON W POZIOMIE (zwykły widok, bez pełnego ekranu)
+   Plansza mieści się w wysokości ekranu, a panele i przyciski stoją obok niej
    ========================================================================== */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 620px) {
+    #tetris-game {
+        padding: 8px !important;
+    }
 
-.achievements-list {
-    list-style: none;
-    padding: 0;
-    margin: 14px 0 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 10px;
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) #tetrisCanvas {
+        height: calc(100dvh - 34px);
+        width: calc((100dvh - 34px) * 0.5);
+        max-width: 38vw;
+        aspect-ratio: auto;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel,
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel.left-panel {
+        display: flex;
+        flex-direction: column;
+        width: 86px;
+        max-width: none;
+        gap: 5px;
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel .stat-box,
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .side-panel .preview-box {
+        flex: none;
+        padding: 4px;
+        margin: 0;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .stat-box .label,
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .preview-box .label {
+        font-size: 8px;
+        margin-bottom: 2px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .stat-box .value {
+        font-size: 13px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .preview-box canvas {
+        width: 48px;
+        height: 48px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .tetris-mobile-controls {
+        display: flex;
+        flex-direction: column;
+        order: 0;
+        flex-basis: auto;
+        width: auto;
+        max-width: 156px;
+        margin: 0;
+        gap: 5px;
+        flex-shrink: 0;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .control-row {
+        gap: 5px;
+    }
+
+    .tetris-container:not(.is-fullscreen):not(:fullscreen) .arrow-btn {
+        height: 40px;
+        min-width: 44px;
+        font-size: 16px;
+    }
 }
 
-.achievement {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.02);
-    opacity: 0.65;
-}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 620px) {
+    .tetris-wrapper .modal {
+        min-width: 0;
+        padding: 12px 8px;
+    }
 
-.achievement.unlocked {
-    opacity: 1;
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
+    .tetris-wrapper .modal h2 {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
 
-.achievement-icon {
-    font-size: 1.6rem;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.achievement-body {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-    flex: 1;
-}
-
-.achievement-body small {
-    color: var(--muted);
-}
-
-.achievement-bar {
-    display: block;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-    margin-top: 2px;
-}
-
-.achievement-bar-fill {
-    display: block;
-    height: 100%;
-    background: var(--accent);
-    border-radius: 3px;
+    .tetris-wrapper .modal p,
+    .tetris-wrapper .modal .menu-extra {
+        font-size: 10px;
+    }
 }
