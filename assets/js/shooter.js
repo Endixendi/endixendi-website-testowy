@@ -873,7 +873,7 @@
             return;
         }
         toastBusy = true;
-        toastEl.textContent = a.icon + ' Osiągnięcie: ' + a.name;
+        toastEl.textContent = a.icon + a.name;
         toastEl.classList.add('show');
         setTimeout(() => {
             toastEl.classList.remove('show');
