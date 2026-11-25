@@ -9,8 +9,8 @@
   /* =========================
      Stałe i stan
      ========================= */
-  const MENU_PATH = 'assets/js/menu.html';
-  const FOOTER_PATH = 'assets/js/footer.html';
+  const MENU_PATH = 'menu.html';   
+  const FOOTER_PATH = 'footer.html';
   const MOBILE_BP = 1200;              // poniżej: menu hamburger
   const PANELS_BP = 1450;              // powyżej: boczne panele skrótów (mieszczą się obok treści)
   const MIN_LOADER_MS = 150;
@@ -23,7 +23,7 @@
   const SEASONAL_THEMES = [
     'theme-birthday', 'theme-new', 'theme-winter', 'theme-spring',
     'theme-summer', 'theme-autumn', 'theme-patriotic', 'theme-youtube'
-  ];	
+  ];
   const THEME_CYCLE = [
     { cls: '', text: 'Styl: Kalendarz' },
     { cls: 'theme-red', text: 'Styl: Czerwony' },
