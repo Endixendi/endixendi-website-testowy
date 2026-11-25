@@ -9,8 +9,8 @@
   /* =========================
      Stałe i stan
      ========================= */
-  const MENU_PATH = '/menu.html';      // ścieżki absolutne: działają też na stronie 404
-  const FOOTER_PATH = '/footer.html';
+  const MENU_PATH = '/assets/js/menu.html';
+  const FOOTER_PATH = '/assets/js/footer.html';
   const MOBILE_BP = 1200;              // poniżej: menu hamburger
   const PANELS_BP = 1450;              // powyżej: boczne panele skrótów (mieszczą się obok treści)
   const MIN_LOADER_MS = 150;
