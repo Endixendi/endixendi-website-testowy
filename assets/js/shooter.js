@@ -1365,7 +1365,7 @@
 
         // Numer fali i combo
         if (state.wave > 0) {
-            ctx.font = 'bold 15px system-ui, sans-serif';
+            ctx.font = 'bold 12px system-ui, sans-serif';
             ctx.fillStyle = 'rgba(255,255,255,0.85)';
             ctx.fillText('Fala ' + state.wave, V_WIDTH / 2, 56);
         }
