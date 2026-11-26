@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		'Ursus_c360.webp',
 		'W_drodze_na_pole.webp',
 		'Zestaw_pod_siewnik.webp',
-		'Zimowa_sprzdaż.webp',
+		'Zimowa_sprzedaż.webp',
 		'Zbiory_topoli.webp'
     ];
 
